@@ -100,6 +100,7 @@ if not options.query :
 
 ###### Main ######
 ### Print intro
+print >> sys.stdout, "Running HaploSplit - HaploSync v0.1beta 
 print >> sys.stdout, "- Running tiling path search"
 print >> sys.stdout, "-- To reproduce this run use the following command: " + " ".join( pipes.quote(x) for x in sys.argv)
 
