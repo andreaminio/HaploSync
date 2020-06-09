@@ -1,5 +1,7 @@
-# HaploSync
+# HaploSync - Ver. 0.1beta
 Tools for haplotype-wise reconstruction of pseudomolecules
+
+_Version V1 is on its way_ with a more features and a more refined workflow
 
 ## Aim
 The aim of the tool is improving continuity of a given genome draft assembly up to pseudomolecule representation using a closely relate species as guide to sort and direct the query sequences.  
