@@ -1,0 +1,90 @@
+---
+title: "HaploDup report"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    self_contained: true
+params:
+  coords: ""
+  filename: ""
+  identity: ""
+  match: ""
+---
+
+```{r}
+# load libraries
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(htmlwidgets))
+suppressPackageStartupMessages(library(RColorBrewer))
+suppressPackageStartupMessages(library(svgPanZoom))
+
+knitr::opts_chunk$set(
+  dev = "svg"
+  )
+
+# get parameters
+coords <- params$coords
+filename <- params$filename
+
+min_len <- as.numeric(params$match)
+min_iden <- as.numeric(params$identity)
+
+# load data
+tb <- read_tsv(coords,  col_names = T)
+
+# filter
+tb2 <- tb %>% filter(identity >= min_iden, match >= min_len)
+
+# prepare labels
+query_hap <- unique(gsub("_chr.*$", "", tb2$qID))
+ref_hap <- unique(gsub("_chr.*$", "", tb2$tID))
+
+# prepare data
+tb3 <- tb2 %>%
+  mutate(tID = factor(tID, levels = unique(tID)[order(unique(tID))]),
+         qID = factor(qID, levels = rev(unique(qID)[order(unique(qID))])))
+
+# plot
+p <- ggplot(tb3) + 
+  geom_segment(aes(x = tStart, y = qStart, xend = tStop, yend = qStop,))+
+  #geom_point(aes(x = tStart, y = qStart), size = 0.009) +
+  #geom_point(aes(x = tStop, y = qStop),size = 0.009) +
+  facet_grid(rows = vars(qID), cols = vars(tID), scales = "free", space = "free", switch = "y") +
+  labs(x = paste0("ref ", ref_hap), y = paste0("query ", query_hap))
+
+p <- p + theme(plot.title = element_text(color="black", size=10, face="plain", margin=margin(t=0,r=0,b=1,l=0,"mm")),
+               axis.title.x = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+               axis.title.y = element_text(color="black", size=10, face="plain", margin=margin(t=0,r=1,b=0,l=1,"mm")),
+			   axis.text.x = element_blank(),
+			   axis.text.y = element_blank(),
+			   axis.line.x = element_blank(),
+			   axis.line.y = element_blank(),
+			   axis.ticks.x = element_blank(),
+			   axis.ticks.y = element_blank(),
+			   plot.background = element_blank(),
+			   panel.background = element_rect(fill = "#fbfbfb", colour = "#fbfbfb", size = 0.5, linetype = "solid"),
+			   panel.grid.major.y = element_blank(),
+			   panel.grid.major.x = element_blank(),
+			   panel.grid.minor.y = element_blank(),
+			   panel.grid.minor.x = element_blank(),
+			   panel.spacing = unit(0.1, "lines"),
+			   strip.text.x = element_text(color="black", size=8, face="plain", angle = 90 ),
+			   strip.text.y.left = element_text(color="black", size=8, face="plain", angle = 0),
+			   plot.margin=unit(c(1,1,1,1),"mm"),
+			   legend.position="none",
+			   aspect.ratio = 1,
+)
+
+# export
+ggsave(p, filename = paste0( filename ,".pdf") , width = 7, height = 7)
+ggsave(p, filename = paste0( filename ,".png") , width = 7, height = 7)
+```
+
+Dotplot
+=====
+```{r echo=FALSE,fig.height=10,fig.width=10, fig.keep = "none"}
+svgPanZoom(p)
+```
+

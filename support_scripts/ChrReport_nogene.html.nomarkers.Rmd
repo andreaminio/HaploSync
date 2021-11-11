@@ -1,0 +1,296 @@
+---
+title: "HaploDup report"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    self_contained: true
+params:
+  coords: ""
+  coords_self: ""
+  min_align: ""
+  similarity: ""
+  queryID: ""
+  refID: ""
+  structure : ""
+  legacy : ""
+  markers : ""
+  dup_markers : ""
+---
+
+
+```{r}
+# load libraries
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(htmlwidgets))
+suppressPackageStartupMessages(library(RColorBrewer))
+
+
+# prepare variables
+nucmer_file <- params$coords
+nucmer_file_self <- params$coords_self
+nucmer_query <- paste0(params$queryID)
+nucmer_ref <- paste0(params$refID)
+nucmer_title <- paste0(params$queryID," on " , params$refID)
+
+min_len <- as.numeric(params$min_align)
+min_iden <- as.numeric(params$similarity)
+
+structure_file <- params$structure
+legacy_file <- params$legacy
+markers_all_file <- params$markers
+markers_dup_file <- params$dup_markers
+
+
+# load data
+tb_1 <- read_delim(file = nucmer_file,
+                 delim = "\t",
+                 col_names = T)
+coords1 <- tb_1 %>% filter(tID==nucmer_ref , qID==nucmer_query , identity > min_iden , match > min_len )
+
+if (nucmer_file_self == "") {
+  coords2 <- 0
+} else {
+  tb_2 <- read_delim(file = nucmer_file_self,
+                 delim = "\t",
+                 col_names = T)
+  coords2 <- tb_2 %>% filter(tID==nucmer_ref , qID==nucmer_ref , identity > min_iden , match > min_len )
+}
+# Columns:
+# tID
+# tLen
+# tStart
+# tStop
+# qID
+# qLen
+# qStart
+# qStop
+# identity
+# match
+
+
+structure_trace <- read_delim(structure_file,
+                            delim = "\t",
+                            col_names = c( "Chr" , "Start" , "Stop" , "Seq_Id" , "orientation" ) ,
+                            )
+
+legacy_trace <- read_delim(legacy_file,
+                            delim = "\t",
+                            col_names = c( "Chr" , "Start" , "Stop" , "Seq_Id" , "orientation" ) ,
+                            )
+# subset
+
+refLen <- max(coords1$tLen)
+queryLen <- max(coords1$qLen)
+
+structure_trace_r <- structure_trace %>% filter(Chr==nucmer_ref )
+legacy_trace_r <- legacy_trace %>% filter(Chr==nucmer_ref )
+
+c <- list(
+  text = "Markers",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  x = 0,
+  y = 1,
+  showarrow = FALSE
+)
+
+d <- list(
+  text = "Duplicated Markers",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  x = 0,
+  y = 1,
+  showarrow = FALSE
+)
+
+
+e <- list(
+  text = "Input sequence composition",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  x = 0,
+  y = 1,
+  showarrow = FALSE
+)
+
+f <- list(
+  text = "Legacy sequence composition",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  x = 0,
+  y = 1,
+  showarrow = FALSE
+)
+
+```
+
+
+```{r}
+# plot
+p0 <- ggplot() +
+  geom_segment( data = coords1 ,
+    aes( x = tStart,
+         y = qStart,
+         xend = tStop,
+         yend = qStop,
+         colour = nucmer_query ,
+         text = sprintf(
+        'Query ID: %s<br>Target ID: %s<br>Qstart: %s - Qend: %s<br>Tstart: %s - Tend: %s<br>Identity: %s',
+        qID, tID, qStart, qStop, tStart, tStop , identity
+          )
+        )
+  ) +
+#  geom_point(aes(x = tStart, y = qStart, color = identity), size = 0.009) +
+#  geom_point(aes(x = tStop, y = qStop, color = identity),size = 0.009) +
+  scale_color_manual(name = "Sequence", breaks = c( nucmer_query , paste0( nucmer_ref , "<br>(Self)") ) , values = c("black", "gray66") ) +
+  scale_x_continuous(limits = c(0, refLen)) +
+  scale_y_continuous(limits = c(0, max(refLen , queryLen) )) +
+  labs(title = nucmer_title, x = nucmer_ref, y = "Query sequence - Position (bp)")
+
+if (!(coords2==0)) {
+p0 <- p0 + geom_segment(data = coords2 ,
+    aes( x = tStart,
+         y = qStart,
+         xend = tStop,
+         yend = qStop,
+         colour = paste0( nucmer_ref , "<br>(Self)"),
+         text = sprintf(
+        'Query ID: %s<br>Target ID: %s<br>Qstart: %s - Qend: %s<br>Tstart: %s - Tend: %s<br>Identity: %s',
+        qID, tID, qStart, qStop, tStart, tStop , identity
+          )
+        )
+  )
+}
+
+p0 <- p0 + theme(plot.title = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+               axis.title.x = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+               axis.title.y = element_text(color="black", size=10, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm")),
+               axis.text.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
+               axis.text.y = element_text(color="black", size=8, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm"), vjust = 0.5),
+               axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+               axis.line.y = element_line(color="black", size=0.5, linetype="solid"),
+               axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+               axis.ticks.y = element_line(color="black", size=0.5, linetype="solid"),
+               plot.background = element_blank(),
+               panel.background = element_blank(),
+               panel.grid.major.y = element_line(color="gray80", size=0.2, linetype="solid") ,
+               panel.grid.major.x = element_line(color="gray80", size=0.2, linetype="solid"),
+               panel.grid.minor.y = element_blank(),
+               panel.grid.minor.x = element_blank(),
+               plot.margin=unit(c(1,1,1,1),"mm"),
+               legend.position="right")
+
+pl0 <- ggplotly( p0, tooltip = "text")
+
+```
+
+
+
+```{r}
+p16 <- ggplot(structure_trace_r) +
+  geom_rect(
+    aes(
+      xmin = Start,
+      xmax = Stop,
+      ymin = 0 ,
+      ymax = 1 ,
+      #colour = Seq_Id,
+      fill = Seq_Id,
+      group = 3,
+      text = sprintf(
+        'Component sequence ID: %s<br>Component region: %s-%s<br>Orientation: %s',
+        Seq_Id, Start , Stop, orientation
+          )
+      ),
+       ) +
+  labs(colour = "" , fill="") +
+  scale_y_continuous(breaks = c( 0 ,1)) +
+  scale_x_continuous(limits = c(0, refLen)) +
+  labs(x = "Sequence position (bp)", y = "")
+
+p16 <- p16 +
+          theme(plot.title = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+                 axis.title.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+                 axis.title.y = element_text(color="black", size=8, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm")),
+                 axis.text.x = element_text(color="black", size=6, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
+                 axis.text.y = element_text(color="black", size=6, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm"), vjust = 0.5),
+                 axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+                 axis.line.y = element_line(color="black", size=0.5, linetype="solid"),
+                 axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+                 axis.ticks.y = element_line(color="black", size=0.5, linetype="solid"),
+                 plot.background = element_blank(),
+                 panel.background = element_blank(),
+                 panel.grid.major.y = element_line(color="gray80", size=0.2, linetype="solid") ,
+                 panel.grid.major.x = element_line(color="gray80", size=0.2, linetype="solid"),
+                 panel.grid.minor.y = element_blank(),
+                 panel.grid.minor.x = element_blank(),
+                 plot.margin=unit(c(.7,.7,.7,.7),"mm"),
+               legend.position="right",
+               legend.margin = margin(10,10,10,10) ,
+               legend.box.margin = margin(10,10,10,10) ,
+            )
+
+pl16  <- ggplotly(p16, tooltip = "text" ) %>% layout(annotations = e)
+```
+
+```{r}
+p17 <- ggplot(legacy_trace_r) +
+  geom_rect(
+    aes(
+      xmin = Start,
+      xmax = Stop,
+      ymin = 0 ,
+      ymax = 1 ,
+      #colour = Seq_Id,
+      fill = Seq_Id,
+      group = 3,
+      text = sprintf(
+        'Component sequence ID: %s<br>Component region: %s-%s<br>Orientation: %s',
+        Seq_Id, Start , Stop, orientation
+          )
+      ),
+       ) +
+  labs(colour = "" , fill="") +
+  scale_y_continuous(breaks = c( 0 ,1)) +
+  scale_x_continuous(limits = c(0, refLen)) +
+  labs(x = "Sequence position (bp)", y = "")
+
+p17 <- p17 +
+          theme(plot.title = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+                 axis.title.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+                 axis.title.y = element_text(color="black", size=8, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm")),
+                 axis.text.x = element_text(color="black", size=6, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
+                 axis.text.y = element_text(color="black", size=6, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm"), vjust = 0.5),
+                 axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+                 axis.line.y = element_line(color="black", size=0.5, linetype="solid"),
+                 axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+                 axis.ticks.y = element_line(color="black", size=0.5, linetype="solid"),
+                 plot.background = element_blank(),
+                 panel.background = element_blank(),
+                 panel.grid.major.y = element_line(color="gray80", size=0.2, linetype="solid") ,
+                 panel.grid.major.x = element_line(color="gray80", size=0.2, linetype="solid"),
+                 panel.grid.minor.y = element_blank(),
+                 panel.grid.minor.x = element_blank(),
+                 plot.margin=unit(c(.7,.7,.7,.7),"mm"),
+               legend.position="right",
+               legend.margin = margin(10,10,10,10) ,
+               legend.box.margin = margin(10,10,10,10) ,
+            )
+
+pl17  <- ggplotly(p17, tooltip = "text" ) %>% layout(annotations = f)
+```
+
+
+Dotplot
+=====
+```{r}
+### Dotplot of alignment results
+subplot( pl0 , pl16 , pl17 , nrows = 3, shareX = T , titleY = T , titleX=T , heights = c(0.82, 0.1 , 0.08 ))
+```
+

@@ -1,0 +1,500 @@
+---
+title: "Unplaced sequence report"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    self_contained: true
+params:
+  filename : ""
+  Hap1: ""
+  Hap2: ""
+  unplacedID: ""
+  structure : ""
+  legacy : ""
+  markers : ""
+  seq_relationships: ""
+  marker_relationship: ""
+  markers_ranges : ""
+---
+
+```{r}
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(ggrepel))
+suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(grid))
+suppressPackageStartupMessages(library(gridExtra))
+suppressPackageStartupMessages(library(htmlwidgets))
+suppressPackageStartupMessages(library(plyr))
+
+# parse parameters ---------------------------------------------------------------
+filename <- params$filename
+
+unplacedID <- params$unplacedID
+Hap1 <- params$Hap1
+Hap2 <- params$Hap2
+
+agp_file <- params$structure
+agp_legacy_file  <- params$legacy
+markers_file <- params$markers
+block_file <- params$markers_ranges
+seq_rel_file <- params$seq_relationships
+marker_rel_file <- params$marker_relationship
+
+# load data ---------------------------------------------------------------
+
+agp <- read_tsv(agp_file, col_names = c("ID" , "start" , "stop" , "component" , "orientation", "group_id"))
+markers <- read_tsv(markers_file, col_names = c("ID" , "coords" , "marker_id" , "marker_order" , "Used") )
+block <- read_tsv(block_file, col_names = c("ID" , "start" , "stop" , "orientation" , "input_id" , "chr_id") )
+
+seq_rel <- read_tsv(seq_rel_file, col_names = c("x" , "y" , "group_id" , "category") )
+if (empty(seq_rel)) {
+  seq_rel_p0 <- tibble()
+  seq_rel_p1 <- tibble()
+} else {
+  seq_rel_p0 <- seq_rel %>% filter(category == "hap1_to_hap2")
+  seq_rel_p1 <- seq_rel %>% filter(category != "hap1_to_hap2")
+}
+
+marker_rel <- read_tsv(marker_rel_file, col_names = c("x1" , "y1" , "x2" , "y2" , "marker_order" , "marker_id" , "category" ))
+```
+
+```{r}
+# Split input files
+agp_hap1 <- agp %>% filter(ID == Hap1) %>% mutate(category = "hap1")
+agp_hap2 <- agp %>% filter(ID == Hap2) %>% mutate(category = "hap2")
+
+hap1_len <- max(agp_hap1$stop)
+hap2_len <- max(agp_hap2$stop)
+
+
+markers_hap1 <- markers %>% filter(ID == Hap1) %>% mutate(category = "hap1")
+markers_hap1_used <- markers_hap1 %>% filter(Used)
+markers_hap2 <- markers %>% filter(ID == Hap2) %>% mutate(category = "hap2")
+markers_hap2_used <- markers_hap2 %>% filter(Used)
+markers_unpl <- markers %>% filter(ID == unplacedID) %>% mutate(category = "unplaced")
+markers_unpl_used <- markers_unpl %>% filter(Used)
+
+marker_rel_p0 <- marker_rel %>% filter(category == "hap1_to_hap2")
+marker_rel_p1 <- marker_rel %>% filter(category != "hap1_to_hap2")
+
+p0_facet_levels = c("hap1","hap1_to_hap2","hap2")
+
+p0_facet_labels = c("Hap1" , "" , "Hap2")
+names(p0_facet_labels) = p0_facet_levels
+
+agp_hap1$category          <- factor(agp_hap1$category,          levels = p0_facet_levels )
+agp_hap2$category          <- factor(agp_hap2$category,          levels = p0_facet_levels )
+marker_rel_p0$category     <- factor(marker_rel_p0$category,     levels = p0_facet_levels )
+markers_hap1$category      <- factor(markers_hap1$category,      levels = p0_facet_levels )
+markers_hap1_used$category <- factor(markers_hap1_used$category, levels = p0_facet_levels )
+markers_hap2$category      <- factor(markers_hap2$category,      levels = p0_facet_levels )
+markers_hap2_used$category <- factor(markers_hap2_used$category, levels = p0_facet_levels )
+seq_rel_p0$category        <- factor(seq_rel_p0$category,        levels = p0_facet_levels )
+
+p0 <- ggplot() +
+        geom_rect(data = agp_hap1,        mapping = aes(xmin = start, xmax = stop, ymin = 0,  ymax = 1 ), size = 0.2, fill = "grey75", color = "black") +
+        geom_rect(data = agp_hap2,        mapping = aes(xmin = start, xmax = stop, ymin = 0,  ymax = 1 ), size = 0.2, fill = "grey75", color = "black") +
+        geom_text_repel(data = agp_hap1        , mapping = aes(x = (start + stop)/2 , y = 0.625, label = component) , direction = "y" , box.padding = unit(0.1, "line") , size = 3 , ylim = c( 0.26 , 0.99  ) ) +
+        geom_text_repel(data = agp_hap2        , mapping = aes(x = (start + stop)/2 , y = 0.375, label = component) , direction = "y" , box.padding = unit(0.1, "line") , size = 3 , ylim = c( 0.01 , 0.74  ) )
+
+if (!(empty(marker_rel_p0)))        {p0 <- p0 + geom_segment(data = marker_rel_p0 , mapping = aes(x = x1, y = y1, xend = x2, yend = y2, color = marker_order)) }
+if (!(empty(markers_hap1)))         {p0 <- p0 + geom_segment(data = markers_hap1      , mapping = aes(x = coords, y = 0.02 , xend = coords, yend = 0.15 , color = marker_order)) }
+if (!(empty(markers_hap1_used)))    {p0 <- p0 + geom_segment(data = markers_hap1_used , mapping = aes(x = coords, y = 0.17 , xend = coords, yend = 0.22 ) , color = "white" ) }
+if (!(empty(markers_hap2)))         {p0 <- p0 + geom_segment(data = markers_hap2      , mapping = aes(x = coords, y = 0.85 , xend = coords, yend = 0.98 , color = marker_order)) }
+if (!(empty(markers_hap2_used)))    {p0 <- p0 + geom_segment(data = markers_hap2_used , mapping = aes(x = coords, y = 0.78 , xend = coords, yend = 0.83 ) , color = "white" ) }
+if (!(empty(seq_rel_p0)))           {p0 <- p0 + geom_polygon(data = seq_rel_p0, mapping = aes(x, y, fill = group_id), alpha = 0.5, size = 0.02) }
+
+p0 <- p0 +
+        scale_color_viridis_c(direction = -1, option = "D", name = "Marker order" ) +
+        facet_grid(rows = vars(category), scales = "free_y", space = "free_y", drop = FALSE , labeller = labeller(category = p0_facet_labels)) +
+        scale_y_continuous(expand = c(0.01, 0.01)) +
+        scale_alpha_manual(values = c(0.2, 1)) +
+        labs(x = "Sequence position (bp)" , title= "Hap1 Vs. Hap2") +
+        scale_fill_discrete(drop=FALSE, name = "Sequence group" ) +
+
+        theme(plot.title = element_text(color="black", size=20, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+                   axis.title.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+                   axis.title.y = element_blank(),
+                   axis.text.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
+                   axis.text.y = element_blank(),
+                   axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+                   axis.line.y = element_blank(),
+                   axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+                   axis.ticks.y = element_blank(),
+                   plot.background = element_blank(),
+                   panel.background = element_blank(),
+                   panel.grid.major.y = element_blank(),
+                   panel.grid.major.x = element_blank(),
+                   panel.grid.minor.y = element_blank(),
+                   panel.grid.minor.x = element_blank(),
+                   panel.spacing = unit(0, "line"),
+                   plot.margin=unit(c(1,1,1,1),"mm"),
+                   legend.position="right")
+
+p0_noLabels <- ggplot() +
+        geom_rect(data = agp_hap1,        mapping = aes(xmin = start, xmax = stop, ymin = 0,  ymax = 1 , text = component ), size = 0.2, fill = "grey75", color = "black") +
+        geom_rect(data = agp_hap2,        mapping = aes(xmin = start, xmax = stop, ymin = 0,  ymax = 1 , text = component ), size = 0.2, fill = "grey75", color = "black")
+
+if (!(empty(marker_rel_p0)))        { p0_noLabels <- p0_noLabels + geom_segment(data = marker_rel_p0 , mapping = aes(x = x1, y = y1, xend = x2, yend = y2, color = marker_order)) }
+if (!(empty(markers_hap1)))         { p0_noLabels <- p0_noLabels + geom_segment(data = markers_hap1      , mapping = aes(x = coords, y = 0.02 , xend = coords, yend = 0.15 , color = marker_order)) }
+if (!(empty(markers_hap1_used)))    { p0_noLabels <- p0_noLabels + geom_segment(data = markers_hap1_used , mapping = aes(x = coords, y = 0.17 , xend = coords, yend = 0.22 ) , color = "white" ) }
+if (!(empty(markers_hap2)))         { p0_noLabels <- p0_noLabels + geom_segment(data = markers_hap2      , mapping = aes(x = coords, y = 0.85 , xend = coords, yend = 0.98 , color = marker_order)) }
+if (!(empty(markers_hap2_used)))    { p0_noLabels <- p0_noLabels + geom_segment(data = markers_hap2_used , mapping = aes(x = coords, y = 0.78 , xend = coords, yend = 0.83 ) , color = "white" ) }
+if (!(empty(seq_rel_p0)))           { p0_noLabels <- p0_noLabels + geom_polygon(data = seq_rel_p0, mapping = aes(x, y, fill = group_id), alpha = 0.5, size = 0.02) }
+
+p0_noLabels <- p0_noLabels +
+        scale_color_viridis_c(direction = -1, option = "D" , name = "Marker order" ) +
+        facet_grid(rows = vars(category), scales = "free_y", space = "free_y", drop = FALSE, labeller = labeller(category = p0_facet_labels)) +
+        scale_y_continuous(expand = c(0.01, 0.01)) +
+        scale_alpha_manual(values = c(0.2, 1)) +
+        labs(x = "Sequence position (bp)") +
+        scale_fill_discrete(name = "" ) +
+
+        theme(plot.title = element_text(color="black", size=20, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+                   axis.title.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+                   axis.title.y = element_blank(),
+                   axis.text.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
+                   axis.text.y = element_blank(),
+                   axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+                   axis.line.y = element_blank(),
+                   axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+                   axis.ticks.y = element_blank(),
+                   plot.background = element_blank(),
+                   panel.background = element_blank(),
+                   panel.grid.major.y = element_blank(),
+                   panel.grid.major.x = element_blank(),
+                   panel.grid.minor.y = element_blank(),
+                   panel.grid.minor.x = element_blank(),
+                   panel.spacing = unit(0, "line"),
+                   plot.margin=unit(c(1,1,1,1),"mm"),
+                   legend.position="right")
+
+a <- list(
+  text = "Hap1 Vs. Hap2",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  xanchor = "left",
+  align = "left",
+  x = 0,
+  y = 1,
+  showarrow = FALSE
+)
+
+pl0 <- ggplotly( p0_noLabels, tooltip = "text" ) %>% layout(yaxis = list(fixedrange = TRUE)  , xaxis = list(title = list( text = "Sequence position (bp)" , font = list(size=10) , standoff=.2)) , annotations = a )
+
+
+for (i in 1:length(pl0$x$data)) { # this goes over all places where legend values are stored
+  n1 <- pl0$x$data[[i]]$name # and this is how the value is stored in plotly
+  n2 <- gsub("\\(","",str_split(n1,",")[[1]][1])
+  pl0$x$data[[i]]$name <- n2 # now is the time for actual replacement
+  pl0$x$data[[i]]$legendgroup <- n2
+  pl0$x$data[[i]]$showlegend <- FALSE
+}
+```
+
+```{r}
+agp_hap1 <- agp %>% filter(ID == Hap1) %>% mutate(category = "hap1")
+agp_hap2 <- agp %>% filter(ID == Hap2) %>% mutate(category = "hap2")
+
+agp_unpl <- agp %>% filter(component == unplacedID) %>% mutate(category = "unplaced")
+agp_unpl$ID <- unplacedID
+old_start <- agp_unpl$start
+old_stop <- agp_unpl$stop
+agp_unpl$start <- 1
+agp_unpl$stop <- old_stop - old_start + 1
+agp_unpl$orientation <- "+"
+
+hap1_len <- max(agp_hap1$stop)
+hap2_len <- max(agp_hap2$stop)
+unpl_len <- max(agp_unpl$stop)
+
+markers_hap1 <- markers %>% filter(ID == Hap1) %>% mutate(category = "hap1")
+markers_hap1_used <- markers_hap1 %>% filter(Used)
+markers_hap2 <- markers %>% filter(ID == Hap2) %>% mutate(category = "hap2")
+markers_hap2_used <- markers_hap2 %>% filter(Used)
+markers_unpl <- markers %>% filter(ID == unplacedID) %>% mutate(category = "unplaced")
+markers_unpl_used <- markers_unpl %>% filter(Used)
+
+marker_rel_p1 <- marker_rel %>% filter(category != "hap1_to_hap2")
+
+p1_facet_levels <- c("hap1","hap1_to_unplaced","unplaced","hap2_to_unplaced","hap2")
+p1_facet_labels <- c("Hap1" , "" , "Unplaced" , "" , "Hap2")
+names(p1_facet_labels) <- p1_facet_levels
+
+agp_hap1$category          <- factor(agp_hap1$category,          levels = p1_facet_levels )
+agp_unpl$category          <- factor(agp_unpl$category,          levels = p1_facet_levels )
+agp_hap2$category          <- factor(agp_hap2$category,          levels = p1_facet_levels )
+
+markers_hap1$category      <- factor(markers_hap1$category,      levels = p1_facet_levels )
+markers_hap1_used$category <- factor(markers_hap1_used$category, levels = p1_facet_levels )
+markers_hap2$category      <- factor(markers_hap2$category,      levels = p1_facet_levels )
+markers_hap2_used$category <- factor(markers_hap2_used$category, levels = p1_facet_levels )
+
+markers_unpl$category      <- factor(markers_unpl$category,      levels = p1_facet_levels )
+markers_unpl_used$category <- factor(markers_unpl_used$category, levels = p1_facet_levels )
+
+
+marker_rel_p1$category     <- factor(marker_rel_p1$category,     levels = p1_facet_levels )
+seq_rel_p1$category        <- factor(seq_rel_p1$category,        levels = p1_facet_levels )
+
+
+p1 <- ggplot() +
+        geom_rect(data = agp_hap1,        mapping = aes(xmin = start, xmax = stop, ymin = 0,    ymax = 1 ), size = 0.2, fill = "grey75", color = "black") +
+        geom_rect(data = agp_unpl,        mapping = aes(xmin = start, xmax = stop, ymin = 0,    ymax = 1.5  , fill=group_id ), size = 0.2, color = "black") +
+        geom_rect(data = agp_hap2,        mapping = aes(xmin = start, xmax = stop, ymin = 0,    ymax = 1 ), size = 0.2, fill = "grey75", color = "black") +
+        geom_text_repel(data = agp_hap1,        mapping = aes(x = (start + stop)/2 , y = 0.625 , label = component), direction = "y" , box.padding = unit(0.1, "line") , size = 3 , ylim = c( 1.01 , 1.49  ) ) +
+        geom_text_repel(data = agp_hap2,        mapping = aes(x = (start + stop)/2 , y = 0.375 , label = component), direction = "y" , box.padding = unit(0.1, "line") , size = 3 , ylim = c( 0.01 , 0.49  ) ) +
+        geom_text_repel(data = agp_unpl,        mapping = aes(x = (start + stop)/2 , y = 0.75  , label = component), direction = "y" , box.padding = unit(0.1, "line") , size = 3 , ylim = c( 0.51 , 0.99  ) )
+
+if (!(empty(marker_rel_p1)))        { p1 <- p1 + geom_segment(data = marker_rel_p1     , mapping = aes(x = x1, y = y1, xend = x2, yend = y2, color = marker_order))}
+
+if (!(empty(markers_hap1)))         { p1 <- p1 + geom_segment(data = markers_hap1      , mapping = aes(x = coords, y = 0.02 , xend = coords, yend = 0.20 , color = marker_order)) }
+if (!(empty(markers_hap1_used)))    { p1 <- p1 + geom_segment(data = markers_hap1_used , mapping = aes(x = coords, y = 0.22 , xend = coords, yend = 0.32 ) , color = "white" ) }
+
+if (!(empty(markers_hap2)))         { p1 <- p1 + geom_segment(data = markers_hap2      , mapping = aes(x = coords, y = 1.30  , xend = coords, yend = 1.48 , color = marker_order)) }
+if (!(empty(markers_hap2_used)))    { p1 <- p1 + geom_segment(data = markers_hap2_used , mapping = aes(x = coords, y = 1.18 , xend = coords, yend = 1.28 ) , color = "white" ) }
+
+if (!(empty(seq_rel_p1)))           { p1 <- p1 + geom_polygon(data = seq_rel_p1        , mapping = aes(x, y, fill = group_id), alpha = 0.5, size = 0.02) }
+if (!(empty(markers_unpl)))         { p1 <- p1 + geom_segment(data = markers_unpl      , mapping = aes(x = coords, y = 0.02 , xend = coords, yend = 0.35 , color = marker_order))+ geom_segment(data = markers_unpl      , mapping = aes(x = coords, y = 1.15  , xend = coords, yend = 1.48 , color = marker_order)) }
+if (!(empty(markers_unpl_used)))    { p1 <- p1 + geom_segment(data = markers_unpl_used , mapping = aes(x = coords, y = 0.4 , xend = coords, yend = 0.5 ) , color = "white" )+ geom_segment(data = markers_unpl_used , mapping = aes(x = coords, y = 1 , xend = coords, yend = 1.1 ) , color = "white" )}
+
+
+
+p1 <- p1 +
+        scale_color_viridis_c(direction = -1, option = "D" , name = "Marker order" ) +
+        facet_grid(rows = vars(category), scales = "free_y", space = "free_y", drop = FALSE, labeller = labeller(category = p1_facet_labels)) +
+        scale_y_continuous(expand = c(0.01, 0.01)) +
+        scale_alpha_manual(values = c(0.2, 1)) +
+        labs(x = "Sequence position (bp)" , title= "Hap1 Vs. Unplaced Vs. Hap2") +
+        scale_fill_discrete(name = "Sequence group" ) +
+
+        theme(plot.title = element_text(color="black", size=20, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+                  axis.title.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+                  axis.title.y = element_blank(),
+                  axis.text.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
+                  axis.text.y = element_blank(),
+                  axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+                  axis.line.y = element_blank(),
+                  axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+                  axis.ticks.y = element_blank(),
+                  plot.background = element_blank(),
+                  panel.background = element_blank(),
+                  panel.grid.major.y = element_blank(),
+                  panel.grid.major.x = element_blank(),
+                  panel.grid.minor.y = element_blank(),
+                  panel.grid.minor.x = element_blank(),
+                  panel.spacing = unit(0, "lines"),
+                  plot.margin=unit(c(1,1,1,1),"mm"),
+                  legend.position="right")
+
+
+p1_noLabels <- ggplot() +
+        geom_rect(data = agp_hap1,        mapping = aes(xmin = start, xmax = stop, ymin = 0,    ymax = 1 ), size = 0.2, fill = "grey75", color = "black") +
+        geom_rect(data = agp_unpl,        mapping = aes(xmin = start, xmax = stop, ymin = 0,    ymax = 1.5  , fill=group_id ), size = 0.2, color = "black") +
+        geom_rect(data = agp_hap2,        mapping = aes(xmin = start, xmax = stop, ymin = 0,    ymax = 1 ), size = 0.2, fill = "grey75", color = "black")
+
+if (!(empty(marker_rel_p1)))        { p1_noLabels <- p1_noLabels + geom_segment(data = marker_rel_p1     , mapping = aes(x = x1, y = y1, xend = x2, yend = y2, color = marker_order))}
+
+if (!(empty(markers_hap1)))         { p1_noLabels <- p1_noLabels + geom_segment(data = markers_hap1      , mapping = aes(x = coords, y = 0.02 , xend = coords, yend = 0.20 , color = marker_order)) }
+if (!(empty(markers_hap1_used)))    { p1_noLabels <- p1_noLabels + geom_segment(data = markers_hap1_used , mapping = aes(x = coords, y = 0.22 , xend = coords, yend = 0.32 ) , color = "white" ) }
+
+if (!(empty(markers_hap2)))         { p1_noLabels <- p1_noLabels + geom_segment(data = markers_hap2      , mapping = aes(x = coords, y = 1.30  , xend = coords, yend = 1.48 , color = marker_order)) }
+if (!(empty(markers_hap2_used)))    { p1_noLabels <- p1_noLabels + geom_segment(data = markers_hap2_used , mapping = aes(x = coords, y = 1.18 , xend = coords, yend = 1.28 ) , color = "white" ) }
+
+if (!(empty(seq_rel_p1)))           { p1_noLabels <- p1_noLabels + geom_polygon(data = seq_rel_p1        , mapping = aes(x, y, fill = group_id), alpha = 0.5, size = 0.02) }
+if (!(empty(markers_unpl)))         { p1_noLabels <- p1_noLabels + geom_segment(data = markers_unpl      , mapping = aes(x = coords, y = 0.02 , xend = coords, yend = 0.35 , color = marker_order))+ geom_segment(data = markers_unpl      , mapping = aes(x = coords, y = 1.15  , xend = coords, yend = 1.48 , color = marker_order)) }
+if (!(empty(markers_unpl_used)))    { p1_noLabels <- p1_noLabels + geom_segment(data = markers_unpl_used , mapping = aes(x = coords, y = 0.4 , xend = coords, yend = 0.5 ) , color = "white" )+ geom_segment(data = markers_unpl_used , mapping = aes(x = coords, y = 1 , xend = coords, yend = 1.1 ) , color = "white" )}
+
+
+
+p1_noLabels <- p1_noLabels +
+        scale_color_viridis_c(direction = -1, option = "D" , name = "Marker order") +
+        facet_grid(rows = vars(category), scales = "free_y", space = "free_y", drop = FALSE, labeller = labeller(category = p1_facet_labels)) +
+        scale_y_continuous(expand = c(0.01, 0.01)) +
+        scale_alpha_manual(values = c(0.2, 1)) +
+        labs(x = "Sequence position (bp)") +
+        scale_fill_discrete(drop=FALSE ,  name = "") +
+
+        theme(plot.title = element_text(color="black", size=20, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+                  axis.title.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+                  axis.title.y = element_blank(),
+                  axis.text.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
+                  axis.text.y = element_blank(),
+                  axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+                  axis.line.y = element_blank(),
+                  axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+                  axis.ticks.y = element_blank(),
+                  plot.background = element_blank(),
+                  panel.background = element_blank(),
+                  panel.grid.major.y = element_blank(),
+                  panel.grid.major.x = element_blank(),
+                  panel.grid.minor.y = element_blank(),
+                  panel.grid.minor.x = element_blank(),
+                  panel.spacing = unit(0, "lines"),
+                  plot.margin=unit(c(1,1,1,1),"mm"),
+                  legend.position="right")
+
+b <- list(
+  text = "Hap1 Vs. Unplaced Vs. Hap2",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  xanchor = "left",
+  align = "left",
+  x = 0,
+  y = 1,
+  showarrow = FALSE
+)
+
+pl1 <- ggplotly( p1_noLabels, tooltip = "text") %>% layout(yaxis = list(fixedrange = TRUE) , xaxis = list(title = list( text = "Sequence position (bp)" , font = list(size=10), standoff=.2)) , annotations = b )
+
+for (i in 1:length(pl1$x$data)) { # this goes over all places where legend values are stored
+  n1 <- pl1$x$data[[i]]$name # and this is how the value is stored in plotly
+  n2 <- gsub("\\(","",str_split(n1,",")[[1]][1])
+  pl1$x$data[[i]]$name <- n2 # now is the time for actual replacement
+  pl1$x$data[[i]]$legendgroup <- n2
+  pl1$x$data[[i]]$showlegend <- FALSE
+}
+```
+
+```{r}
+p2_facet_levels = c("Hap1","Unplaced","Hap2")
+
+block_hap1 <- block %>% filter(ID == Hap1) %>% mutate(category = "Hap1")
+block_hap2 <- block %>% filter(ID == Hap2) %>% mutate(category = "Hap2")
+block_unpl <- block %>% filter(ID == unplacedID) %>% mutate(category = "Unplaced")
+block_hap1$category   <- factor(block_hap1$category,   levels = p2_facet_levels )
+block_hap2$category   <- factor(block_hap2$category,   levels = p2_facet_levels )
+block_unpl$category   <- factor(block_unpl$category,   levels = p2_facet_levels )
+
+p2 <- ggplot() +
+        geom_rect(data = block_hap1, mapping = aes(xmin = start-.1, xmax = stop+.1, ymin = 0, ymax = 1 , fill=orientation ) , size = 0.2, color = "black" )+
+        geom_rect(data = block_hap2, mapping = aes(xmin = start-.1, xmax = stop+.1, ymin = 0, ymax = 1 , fill=orientation ) , size = 0.2, color = "black" ) +
+        geom_text_repel(data = block_hap1, mapping = aes(x = (start + stop)/2 , y = 0.5, label = input_id), direction = "y" , box.padding = unit(0.1, "line") , size = 3 , ylim = c( 0.01 , 0.99  ) ) +
+        geom_text_repel(data = block_hap2, mapping = aes(x = (start + stop)/2 , y = 0.5, label = input_id), direction = "y" , box.padding = unit(0.1, "line") , size = 3 , ylim = c( 0.01 , 0.99  ) )
+
+if (!(empty(block_unpl))) { p2 <- p2 + geom_rect(data = block_unpl, mapping = aes(xmin = start-.1, xmax = stop+.1, ymin = 0, ymax = 1 , fill=orientation ) , size = 0.2, color = "black" )+ geom_text_repel(data = block_unpl, mapping = aes(x = (start + stop)/2 , y = 0.5, label = input_id), direction = "y" , box.padding = unit(0.1, "line") , size = 3 , ylim = c( 0.01 , 0.99  ) ) }
+
+p2 <- p2 +
+        facet_grid(rows = vars(category), scales = "free_y", space = "free_y", drop = FALSE) +
+        scale_y_continuous(expand = c(0.005, 0.005)) +
+        scale_alpha_manual(values = c(0.2, 1)) +
+        labs(x = "Map position" , title= "Marker ranges") +
+        scale_fill_discrete(drop=FALSE) +
+
+        theme(plot.title = element_text(color="black", size=20, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+                  axis.title.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+                  axis.title.y = element_blank(),
+                  axis.text.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
+                  axis.text.y = element_blank(),
+                  axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+                  axis.line.y = element_blank(),
+                  axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+                  axis.ticks.y = element_blank(),
+                  plot.background = element_blank(),
+                  panel.background = element_blank(),
+                  panel.grid.major.y = element_blank(),
+                  panel.grid.major.x = element_blank(),
+                  panel.grid.minor.y = element_blank(),
+                  panel.grid.minor.x = element_blank(),
+                  panel.spacing = unit(0, "lines"),
+                  plot.margin=unit(c(1,1,1,1),"mm"),
+                  legend.position="right",)
+
+
+p2_noLabels <- ggplot() +
+        geom_rect(data = block_hap1, mapping = aes(xmin = start-.1, xmax = stop+.1, ymin = 0, ymax = 1  , fill=orientation , text = sprintf( "Sequence ID: %s<br>Orientation: %s<br>Marker range: %s-%s" , input_id , orientation , start , stop) ), size = 0.2, color = "black") +
+        geom_rect(data = block_hap2, mapping = aes(xmin = start-.1, xmax = stop+.1, ymin = 0, ymax = 1  , fill=orientation , text = sprintf( "Sequence ID: %s<br>Orientation: %s<br>Marker range: %s-%s" , input_id , orientation , start , stop) ), size = 0.2, color = "black")
+
+if (!(empty(block_unpl))) { p2_noLabels <- p2_noLabels + geom_rect(data = block_unpl, mapping = aes(xmin = start-.1, xmax = stop+.1, ymin = 0, ymax = 1 , fill=orientation ) , size = 0.2, color = "black" ) }
+
+
+p2_noLabels <- p2_noLabels +
+        facet_grid(rows = vars(category), scales = "free_y", space = "free_y", drop = FALSE) +
+        scale_y_continuous(expand = c(0.005, 0.005) ) +
+        scale_alpha_manual(values = c(0.2, 1)) +
+        labs(x = "Map position") +
+        scale_fill_discrete(drop=FALSE , name = "" ) +
+
+        theme(plot.title = element_text(color="black", size=20, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+                  axis.title.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+                  axis.title.y = element_blank(),
+                  axis.text.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
+                  axis.text.y = element_blank(),
+                  axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+                  axis.line.y = element_blank(),
+                  axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+                  axis.ticks.y = element_blank(),
+                  plot.background = element_blank(),
+                  panel.background = element_blank(),
+                  panel.border = element_rect(color="black", fill=NA),
+                  panel.grid.major.y = element_blank(),
+                  panel.grid.major.x = element_line(color="gray66", size=0.2, linetype="solid"),
+                  panel.grid.minor.y = element_blank(),
+                  panel.grid.minor.x = element_blank(),
+                  panel.spacing = unit(0, "lines"),
+                  plot.margin=unit(c(1,1,1,1),"mm"),
+                  legend.position="right",
+                  strip.text.y = element_text(angle = 0),
+                  strip.background = element_blank()
+                  )
+
+c <- list(
+  text = "Marker ranges",
+  xref = "paper",
+  yref = "paper",
+  yanchor = "bottom",
+  xanchor = "left",
+  align = "left",
+  x = 0,
+  y = 1,
+  showarrow = FALSE
+)
+
+pl2 <- ggplotly( p2_noLabels, tooltip = "text") %>% layout(yaxis = list(fixedrange = TRUE) , xaxis = list(title = list( text = "Map position", font = list(size=10) , standoff=.2) ) , annotations = c )
+
+for (i in 1:length(pl2$x$data)) { # this goes over all places where legend values are stored
+  n1 <- pl2$x$data[[i]]$name # and this is how the value is stored in plotly
+  n2 <- gsub("\\(","",str_split(n1,",")[[1]][1])
+  pl2$x$data[[i]]$name <- n2 # now is the time for actual replacement
+  pl2$x$data[[i]]$legendgroup <- n2
+}
+```
+
+```{r}
+pdf(NULL)
+gt1 <- ggplotGrob(p0)
+gt2 <- ggplotGrob(p1)
+gt3 <- ggplotGrob(p2)
+
+gt1_widths <- gt1$widths
+gt2_widths <- gt2$widths
+gt3_widths <- gt3$widths
+
+
+maxWidth <- unit.pmax(gt1_widths, gt2_widths, gt3_widths )
+
+gt1$widths <- maxWidth
+gt2$widths <- maxWidth
+gt3$widths <- maxWidth
+
+
+layout <- rbind(1,2,3)
+
+pg          <- arrangeGrob( gt1 , gt2 , gt3 , layout_matrix=layout , heights=c(.3, .5 , .2 ) )
+
+ggsave(pg, filename = paste0(filename,".pdf"), height = 22, width = 22)
+ggsave(pg, filename = paste0(filename,".png"), height = 22, width = 22)
+
+```
+
+Unplaced structure and marker
+==============================================================
+```{r}
+plh1 <- subplot( pl0 , pl1 , nrows = 2 , shareX = TRUE , margin = c(0 , 0 , 0.03 , 0.03) , heights = c(0.4 , 0.6 ) )
+#subplot( pl0 , pl1 , nrows = 2 , shareX = TRUE , titleY = T , titleX=T , margin = c(0 , 0 , 0.03 , 0.03) , heights = c(0.4 , 0.6 ) )
+subplot( plh1 , style(pl2,showlegend = F) , nrows = 2 , titleY = T , titleX=T , margin = c(0 , 0 , 0.05 , 0.05) , heights = c(0.84 , 0.15 ) )
+```
+

@@ -1,0 +1,117 @@
+---
+title: "HaploDup report"
+output:
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+    self_contained: true
+params:
+  filename : ""
+  coords: ""
+  match: ""
+  identity: ""
+  queryID: ""
+  refID: ""
+---
+
+
+```{r}
+# load libraries
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(plotly))
+suppressPackageStartupMessages(library(htmlwidgets))
+suppressPackageStartupMessages(library(RColorBrewer))
+suppressPackageStartupMessages(library(plyr))
+
+# prepare variables
+filename <- params$filename
+nucmer_file <- params$coords
+nucmer_query <- paste0(params$queryID)
+nucmer_ref <- paste0(params$refID)
+nucmer_title <- paste0(params$queryID," on " , params$refID)
+min_len <- as.numeric(params$match)
+min_iden <- as.numeric(params$identity)
+
+# load data
+tb_1 <- read_delim(file = nucmer_file,
+                 delim = "\t",
+                 col_names = T)
+
+coords1 <- tb_1 %>% filter(tID==nucmer_ref , qID==nucmer_query , identity > min_iden , match > min_len )
+
+if (empty(coords1)) {
+ coords1 <- tibble(tStart = 0 , qStart = 0  , tStop = 0 , qStop = 0 , qID = nucmer_query , tID = nucmer_ref , identity = 0)
+}
+
+# Columns:
+# tID
+# tLen
+# tStart
+# tStop
+# qID
+# qLen
+# qStart
+# qStop
+# identity
+# match
+
+# subset
+
+refLen <- max(coords1$tLen)
+queryLen <- max(coords1$qLen)
+```
+
+
+```{r}
+# plot
+p0 <- ggplot() +
+  geom_segment( data = coords1 ,
+    aes( x = tStart,
+         y = qStart,
+         xend = tStop,
+         yend = qStop,
+         text = sprintf(
+        'Query ID: %s<br>Target ID: %s<br>Qstart: %s - Qend: %s<br>Tstart: %s - Tend: %s<br>Identity: %s',
+        qID, tID, qStart, qStop, tStart, tStop , identity
+          )
+        )
+  ) +
+#  geom_point(aes(x = tStart, y = qStart, color = identity), size = 0.009) +
+#  geom_point(aes(x = tStop, y = qStop, color = identity),size = 0.009) +
+  scale_x_continuous(limits = c(0, refLen)) +
+  scale_y_continuous(limits = c(0, max(refLen , queryLen) )) +
+  labs(title = nucmer_title, x = nucmer_ref, y = "Query sequence - Position (bp)")
+
+p0 <- p0 + theme(plot.title = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+               axis.title.x = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+               axis.title.y = element_text(color="black", size=10, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm")),
+               axis.text.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
+               axis.text.y = element_text(color="black", size=8, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm"), vjust = 0.5),
+               axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+               axis.line.y = element_line(color="black", size=0.5, linetype="solid"),
+               axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+               axis.ticks.y = element_line(color="black", size=0.5, linetype="solid"),
+               plot.background = element_blank(),
+               panel.background = element_blank(),
+               panel.grid.major.y = element_line(color="gray80", size=0.2, linetype="solid") ,
+               panel.grid.major.x = element_line(color="gray80", size=0.2, linetype="solid"),
+               panel.grid.minor.y = element_blank(),
+               panel.grid.minor.x = element_blank(),
+               plot.margin=unit(c(1,1,1,1),"mm"),
+               legend.position="right")
+
+pl0 <- ggplotly( p0, tooltip = "text")
+
+ggsave(p0, filename = paste0( filename ,".pdf") , width = 7, height = 7)
+ggsave(p0, filename = paste0( filename ,".png") , width = 7, height = 7)
+```
+
+
+
+Dotplot
+=====
+```{r}
+### Dotplot of alignment results
+pl0
+```
+

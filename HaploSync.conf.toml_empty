@@ -1,0 +1,10 @@
+title = "HaploBuild configuration file"
+
+[paths]
+minimap2 = ""
+samtools = ""
+bedtools = ""
+nucmer = ""
+show-coords = ""
+gmap = ""
+blat = ""
