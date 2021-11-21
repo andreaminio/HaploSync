@@ -3280,15 +3280,18 @@ def main() :
 						plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
 				elif comparison == "Reference_vs_Hap1" :
 					for queryID in sorted(ref_ids) :
-						refID = ref_to_hap1[queryID]
-						hap1ID = refID
-						hap2ID = hap1_to_hap2[hap1ID]
-						hap1Len = fasta_1_len[hap1ID]
-						hap2Len = fasta_2_len[hap2ID]
-						plot_files[comparison]["Reports"][queryID] = {}
-						plot_files[comparison]["Reports"][queryID]["html"] = make_pair_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), os.path.realpath(haplodup_dir), os.path.realpath(outdir_name), queryID, refID, structure_file , legacy_structure_file , all_markers_file_name , dup_markers_file_name , hap1ID , hap2ID , hap1Len , hap2Len , "diploid_gene_count_trace.hap1.txt", "diploid_gene_count_trace.hap2.txt", "3000", "90", "0.33")
-						plot_files[comparison]["Reports"][queryID]["pdf"] = make_pair_pdf_report(os.path.basename(coords_file), os.path.basename(coords_file_self), os.path.realpath(haplodup_dir), os.path.realpath(outdir_name), queryID, refID, structure_file   , legacy_structure_file , all_markers_file_name , dup_markers_file_name , hap1ID , hap2ID , "diploid_gene_count_trace.hap1.txt", "3000", "90", "0.33")
-						#													make_pair_pdf_report(coords						  , coords_self                       , workdir						  , output_dir				     , queryID, refID, structure        , legacy                , markers               , dup_markers           , hap1ID , hap2ID , counts_hap1                        , min_align , similarity , ratio ) :																																												                                    refID, structure = "" , legacy = "" , markers = "" , dup_markers = "" , hap1ID
+						if queryID in ref_to_hap1 :
+							refID = ref_to_hap1[queryID]
+							hap1ID = refID
+							hap2ID = hap1_to_hap2[hap1ID]
+							hap1Len = fasta_1_len[hap1ID]
+							hap2Len = fasta_2_len[hap2ID]
+							plot_files[comparison]["Reports"][queryID] = {}
+							plot_files[comparison]["Reports"][queryID]["html"] = make_pair_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), os.path.realpath(haplodup_dir), os.path.realpath(outdir_name), queryID, refID, structure_file , legacy_structure_file , all_markers_file_name , dup_markers_file_name , hap1ID , hap2ID , hap1Len , hap2Len , "diploid_gene_count_trace.hap1.txt", "diploid_gene_count_trace.hap2.txt", "3000", "90", "0.33")
+							plot_files[comparison]["Reports"][queryID]["pdf"] = make_pair_pdf_report(os.path.basename(coords_file), os.path.basename(coords_file_self), os.path.realpath(haplodup_dir), os.path.realpath(outdir_name), queryID, refID, structure_file   , legacy_structure_file , all_markers_file_name , dup_markers_file_name , hap1ID , hap2ID , "diploid_gene_count_trace.hap1.txt", "3000", "90", "0.33")
+							#													make_pair_pdf_report(coords						  , coords_self                       , workdir						  , output_dir				     , queryID, refID, structure        , legacy                , markers               , dup_markers           , hap1ID , hap2ID , counts_hap1                        , min_align , similarity , ratio ) :																																												                                    refID, structure = "" , legacy = "" , markers = "" , dup_markers = "" , hap1ID
+						else :
+							print >> sys.stderr , "[WARNING] Reference sequence " + queryID + " has no related sequence in Hap1 "
 				elif comparison == "Hap1_vs_Hap1" :
 					for queryID in sorted(hap1_ids.split(",")) :
 						refID = queryID
@@ -3313,15 +3316,18 @@ def main() :
 						plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
 				elif comparison == "Reference_vs_Hap2" :
 					for queryID in sorted(ref_ids) :
-						refID = ref_to_hap2[queryID]
-						hap1ID = hap2_to_hap1[refID]
-						hap2ID = refID
-						hap1Len = fasta_1_len[hap1ID]
-						hap2Len = fasta_2_len[hap2ID]
-						plot_files[comparison]["Reports"][queryID] = {}
-						plot_files[comparison]["Reports"][queryID]["html"] = make_pair_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), os.path.realpath(haplodup_dir), os.path.realpath(outdir_name), queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hap1ID , hap2ID , hap1Len , hap2Len , "diploid_gene_count_trace.hap1.txt", "diploid_gene_count_trace.hap2.txt", "3000", "90", "0.33")
-						plot_files[comparison]["Reports"][queryID]["pdf"] = make_pair_pdf_report(os.path.basename(coords_file), os.path.basename(coords_file_self), os.path.realpath(haplodup_dir), os.path.realpath(outdir_name), queryID, refID, structure_file , legacy_structure_file , all_markers_file_name , dup_markers_file_name , hap1ID , hap2ID , "diploid_gene_count_trace.hap2.txt", "3000", "90", "0.33")
-						#													make_pair_pdf_report(coords						  , coords_self                       , workdir						  , output_dir				     , queryID, refID, structure      , legacy                , markers               , dup_markers           , hap1ID , hap2ID , counts_hap1                        , min_align , similarity , ratio ) :
+						if queryID in ref_to_hap2 :
+							refID = ref_to_hap2[queryID]
+							hap1ID = hap2_to_hap1[refID]
+							hap2ID = refID
+							hap1Len = fasta_1_len[hap1ID]
+							hap2Len = fasta_2_len[hap2ID]
+							plot_files[comparison]["Reports"][queryID] = {}
+							plot_files[comparison]["Reports"][queryID]["html"] = make_pair_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), os.path.realpath(haplodup_dir), os.path.realpath(outdir_name), queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hap1ID , hap2ID , hap1Len , hap2Len , "diploid_gene_count_trace.hap1.txt", "diploid_gene_count_trace.hap2.txt", "3000", "90", "0.33")
+							plot_files[comparison]["Reports"][queryID]["pdf"] = make_pair_pdf_report(os.path.basename(coords_file), os.path.basename(coords_file_self), os.path.realpath(haplodup_dir), os.path.realpath(outdir_name), queryID, refID, structure_file , legacy_structure_file , all_markers_file_name , dup_markers_file_name , hap1ID , hap2ID , "diploid_gene_count_trace.hap2.txt", "3000", "90", "0.33")
+							#													make_pair_pdf_report(coords						  , coords_self                       , workdir						  , output_dir				     , queryID, refID, structure      , legacy                , markers               , dup_markers           , hap1ID , hap2ID , counts_hap1                        , min_align , similarity , ratio ) :
+						else :
+							print >> sys.stderr , "[WARNING] Reference sequence " + queryID + " has no related sequence in Hap2 "
 				elif comparison == "Hap2_vs_Hap1" :
 					for hap2ID in sorted(hap2_ids.split(",")) :
 						hap1ID = hap2_to_hap1[hap2ID]
@@ -3335,15 +3341,18 @@ def main() :
 						#													make_pair_pdf_report(coords						  , coords_self                       , workdir						  , output_dir				     , queryID, refID, structure      , legacy                , markers               , dup_markers           , hap1ID , hap2ID , counts_hap1                        , min_align , similarity , ratio ) :
 				elif comparison == "Hap1_vs_Hap2" :
 					for hap1ID in sorted(hap1_ids.split(",")) :
-						hap2ID = hap1_to_hap2[hap1ID]
-						queryID = hap1ID
-						refID = hap2ID
-						hap1Len = fasta_1_len[hap1ID]
-						hap2Len = fasta_2_len[hap2ID]
-						plot_files[comparison]["Reports"][queryID] = {}
-						plot_files[comparison]["Reports"][queryID]["html"] = make_pair_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), os.path.realpath(haplodup_dir), os.path.realpath(outdir_name), queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name ,  hap1ID , hap2ID , hap1Len , hap2Len , "diploid_gene_count_trace.hap1.txt", "diploid_gene_count_trace.hap2.txt", "3000", "90", "0.33")
-						plot_files[comparison]["Reports"][queryID]["pdf"] = make_pair_pdf_report(os.path.basename(coords_file), os.path.basename(coords_file_self), os.path.realpath(haplodup_dir), os.path.realpath(outdir_name), queryID, refID, structure_file , legacy_structure_file , all_markers_file_name , dup_markers_file_name , hap1ID , hap2ID , "diploid_gene_count_trace.hap2.txt", "3000", "90", "0.33")
-						#													make_pair_pdf_report(coords						  , coords_self                       , workdir						  , output_dir				     , queryID, refID, structure      , legacy                , markers               , dup_markers           , hap1ID , hap2ID , counts_hap1                        , min_align , similarity , ratio ) :
+						if hap1ID in hap1_to_hap2:
+							hap2ID = hap1_to_hap2[hap1ID]
+							queryID = hap1ID
+							refID = hap2ID
+							hap1Len = fasta_1_len[hap1ID]
+							hap2Len = fasta_2_len[hap2ID]
+							plot_files[comparison]["Reports"][queryID] = {}
+							plot_files[comparison]["Reports"][queryID]["html"] = make_pair_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), os.path.realpath(haplodup_dir), os.path.realpath(outdir_name), queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name ,  hap1ID , hap2ID , hap1Len , hap2Len , "diploid_gene_count_trace.hap1.txt", "diploid_gene_count_trace.hap2.txt", "3000", "90", "0.33")
+							plot_files[comparison]["Reports"][queryID]["pdf"] = make_pair_pdf_report(os.path.basename(coords_file), os.path.basename(coords_file_self), os.path.realpath(haplodup_dir), os.path.realpath(outdir_name), queryID, refID, structure_file , legacy_structure_file , all_markers_file_name , dup_markers_file_name , hap1ID , hap2ID , "diploid_gene_count_trace.hap2.txt", "3000", "90", "0.33")
+							#													make_pair_pdf_report(coords						  , coords_self                       , workdir						  , output_dir				     , queryID, refID, structure      , legacy                , markers               , dup_markers           , hap1ID , hap2ID , counts_hap1                        , min_align , similarity , ratio ) :
+						else :
+							print >> sys.stderr , "[WARNING] Hap1 sequence " + hap1ID + " has no related sequence in Hap2 "
 				elif comparison == "Hap2_vs_Hap2" :
 					for hap2ID in sorted(hap2_ids.split(",")) :
 						hap1ID = hap2_to_hap1[hap2ID]
@@ -3377,10 +3386,13 @@ def main() :
 						plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
 				elif comparison == "Reference_vs_Hap1" :
 					for queryID in sorted(ref_ids) :
-						refID = ref_to_hap1[queryID]
-						plot_files[comparison]["Reports"][queryID] = {}
-						plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, "3000", "90")
-						plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
+						if queryID in ref_to_hap1 :
+							refID = ref_to_hap1[queryID]
+							plot_files[comparison]["Reports"][queryID] = {}
+							plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, "3000", "90")
+							plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
+						else :
+							print >> sys.stderr , "[WARNING] Reference sequence " + queryID + " has no related sequence in Hap1"
 				elif comparison == "Hap1_vs_Hap1" :
 					continue
 				elif comparison == "Hap2_vs_Reference" :
@@ -3391,10 +3403,13 @@ def main() :
 						plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
 				elif comparison == "Reference_vs_Hap2" :
 					for queryID in sorted(ref_ids) :
-						refID = ref_to_hap2[queryID]
-						plot_files[comparison]["Reports"][queryID] = {}
-						plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, "3000", "90")
-						plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
+						if queryID in ref_to_hap2 :
+							refID = ref_to_hap2[queryID]
+							plot_files[comparison]["Reports"][queryID] = {}
+							plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, "3000", "90")
+							plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
+						else :
+							print >> sys.stderr , "[WARNING] Reference sequence " + queryID + " has no related sequence in Hap2"
 				elif comparison == "Hap2_vs_Hap1" :
 					for queryID in sorted(hap2_ids) :
 						refID = hap2_to_hap1[queryID]
@@ -3403,10 +3418,13 @@ def main() :
 						plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
 				elif comparison == "Hap1_vs_Hap2" :
 					for queryID in sorted(hap1_ids) :
-						refID = hap1_to_hap2[queryID]
-						plot_files[comparison]["Reports"][queryID] = {}
-						plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, "3000", "90")
-						plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
+						if queryID in hap1_to_hap2 :
+							refID = hap1_to_hap2[queryID]
+							plot_files[comparison]["Reports"][queryID] = {}
+							plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, "3000", "90")
+							plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
+						else :
+							print >> sys.stderr , "[WARNING] Hap1 sequence " + hap1ID + " has no related sequence in Hap2 "
 				elif comparison == "Hap2_vs_Hap2" :
 					continue
 				else :
