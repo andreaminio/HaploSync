@@ -21,3 +21,8 @@ HaploSync was developed to improve the quality of diploid genome assemblies. Thi
   * [Go to installation](./manual/Install.md)
 
 ## Cite:
+### Pre-print:
+__Assembly of complete diploid phased chromosomes from draft genome sequences__\
+Andrea Minio, Noé Cochetel, Amanda M Vondras, Mélanie Massonnet, Dario Cantu;\
+bioRxiv 2021.11.11.468134; doi: https://doi.org/10.1101/2021.11.11.468134
+
