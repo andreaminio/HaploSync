@@ -3246,6 +3246,7 @@ def main() :
 			hit_file_2 = print_hit_counts(hit_counts_2, haplodup_dir + "/diploid_gene_count_trace.hap2.txt")
 
 			print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] = Generating reports"
+			print >> sys.stderr , "# Generating reports"
 
 			for comparison in coord_tables.keys() :
 				plot_files[comparison]["Reports"] = {}
