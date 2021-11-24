@@ -98,7 +98,9 @@ p0 <- p0 + theme(plot.title = element_text(color="black", size=10, face="plain",
                panel.grid.minor.y = element_blank(),
                panel.grid.minor.x = element_blank(),
                plot.margin=unit(c(1,1,1,1),"mm"),
-               legend.position="right")
+               legend.position="right",
+			   aspect.ratio = 1,
+)
 
 pl0 <- ggplotly( p0, tooltip = "text")
 

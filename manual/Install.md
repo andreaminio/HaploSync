@@ -24,7 +24,8 @@ The tools below run the pipeline. It is not necessary for these to be in your `$
   * [Gmap](http://research-pub.gene.com/gmap/)
     * **Note**: we suggest installing version *2019.09.12*, which is the last version not affected by a bug (@2020.07.16). In version *2020.06.01* and *2020.04.08*, separators between some attributes are missing in the gff3 output. While HaploSync can handle this known issue, the result may be parsed incorrectly if you use the tool independently.
   * [Mummer v.4](https://mummer4.github.io/)
-    * **Note**: Mummer v3 is not compatible because it does not permit multi-threading. Some releases of Mummer v.4 < beta 5 (4.0.0.beta5) should be avoided; a bug allows the tool to report hits between large regions of Ns in the sequences. This does not affect the assembly performance of HaploSync, but dotplots will report unexpected gap-to-gap hits. Installation of the tool through Conda should be avoided. The Bioconda repository only hosts a beta2 version of the tool (@2020.07.16), which is affected by the bug.   
+    * **Note 1**: Mummer v3 is not compatible because it does not permit multi-threading. 
+    * **Note 2**: Some releases of Mummer v.4 < beta 5 (4.0.0.beta5) should be avoided; a bug allows the tool to report hits between large regions of Ns in the sequences. This does not affect the assembly performance of HaploSync, but dotplots will report unexpected gap-to-gap hits. Installation of the tool through Conda should be avoided. The Bioconda repository only hosts a beta2 version of the tool (@2020.07.16), which is affected by the bug.   
   * [Samtools](https://github.com/samtools)
   * [Bedtools](https://bedtools.readthedocs.io/en/latest/) 
   * [R](https://www.r-project.org/) v4.0 or higher, with the following libraries: 
@@ -66,7 +67,7 @@ If the user does not have sudo credentials and/or needs to avoid conflicts with 
    pip install numpy scipy toml datetime multiprocessing pyyaml matplotlib
    ```
 
-5. _(Optional)_ Install a local version of the 3rd party tools
+5. Install a local version of the 3rd party tools
 
    * Use coda to automatise the installation
 
@@ -77,7 +78,7 @@ If the user does not have sudo credentials and/or needs to avoid conflicts with 
      conda install -c bioconda gmap=2019.09.12
      ```
 
-6. _(Optional)_ Install Mummer v4
+6. Install Mummer v4
 
    * Download [Mummer version 4.0.0.beta5](https://github.com/mummer4/mummer/releases/tag/v4.0.0.beta5) or later from GitHub and install the tool in the Conda environment 
 
@@ -88,7 +89,7 @@ If the user does not have sudo credentials and/or needs to avoid conflicts with 
      make install
      ```
    
-7. _(Optional)_ Install R and necessary libraries
+7. Install R and necessary libraries
 
      ```bash
      conda install -c conda-forge r-base=4.0.2
@@ -112,12 +113,13 @@ If the user does not have sudo credentials and/or needs to avoid conflicts with 
        install.packages("flexdashboard")
        install.packages("gridExtra")
        install.packages("devtools")
+       require(devtools)
+       install_version("knitr", version = "1.29", repos = "http://cran.us.r-project.org")
+       install_version("ggplot2", version = "3.3.2", repos = "http://cran.us.r-project.org")
        install.packages("svglite")
        install.packages("gridSVG")
        install.packages("svgPanZoom")
        install.packages("ggrepel")
-       require(devtools)
-       install_version("knitr", version = "1.29", repos = "http://cran.us.r-project.org")
        ```
 
 8. Load the environment (**this should be done before running HaploSync tools**)
@@ -152,7 +154,7 @@ Download and unpack the desired release version from [the releases reporsitory](
 
 ## Setup custom paths (Optional)
 
-If you want to use tool installations that are not accessible directly in your `$PATH` you can configure the tool for use in custom paths.
+If you want to use compatible tool installations that are not accessible directly in your `$PATH` you can configure the tool for use in custom paths.
 
 If you set up a virtual environment using conda and installed a local version of the tools, you don’t need to customise:
 
