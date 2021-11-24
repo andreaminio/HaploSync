@@ -33,6 +33,10 @@ The tools below run the pipeline. It is not necessary for these to be in your `$
     * [optparse](https://github.com/trevorld/r-optparse) 
     * [plyr](https://github.com/hadley/plyr)
     * svgPanZoom
+    * knitr
+      * **Note**: version 1.29 required 
+    * ggplot2
+      * **Note**: version 3.3.2 required
 * Optional
   * [Blat](http://www.kentinformatics.com/)
 
