@@ -6,17 +6,14 @@ The aim of the tool is improving continuity of a given genome draft assembly up 
 
 ![HaploSync Diagram](./manual/Workflows/Diagram.png)
 
-
 HaploSync was developed to improve the quality of diploid genome assemblies. This tool:
 
-* builds diploid pseudomolecule assemblies from draft sequences using 
-  * a geteic map of features 
-  * a reference genome as a guide
-* enhances assembly contiguity,
-* fills sequence gaps by comparing haplotypes independent of a reference,
-* generates maps of the phased haplotypes,
-* assesses the quality of assembled sequences
-* edits sequences.
+* Builds diploid pseudomolecule assemblies from draft sequences using:
+  * a genetic map 
+  * a chromosome scaled guide genome of a closely related species 
+* Compares alternative haplotypes to identify and correct misassemblies independently from any reference
+* Fills assembly gaps with un-placed sequences
+* Resolves collapsed homozygous regions
 
 ## Resources
   * [Go to manual](./manual/Readme.md)
