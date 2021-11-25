@@ -6,85 +6,134 @@ output:
     vertical_layout: fill
     self_contained: true
 params:
+  filename : ""
   coords: ""
-  filename: ""
-  identity: ""
   match: ""
+  identity: ""
 ---
+
 
 ```{r}
 # load libraries
+
 suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(plotly))
 suppressPackageStartupMessages(library(htmlwidgets))
+suppressPackageStartupMessages(library(tidyr))
 suppressPackageStartupMessages(library(RColorBrewer))
-suppressPackageStartupMessages(library(svgPanZoom))
+suppressPackageStartupMessages(library(dplyr))
 
-knitr::opts_chunk$set(
-  dev = "svg"
-  )
-
-# get parameters
-coords <- params$coords
+# prepare variables
 filename <- params$filename
-
+nucmer_file <- params$coords
+nucmer_query <- paste0(params$queryID)
+nucmer_ref <- paste0(params$refID)
+nucmer_title <- paste0(filename)
 min_len <- as.numeric(params$match)
 min_iden <- as.numeric(params$identity)
 
 # load data
-tb <- read_tsv(coords,  col_names = T)
+tb_1 <- read_delim(file = nucmer_file,
+                 delim = "\t",
+                 col_names = T)
+#dim(tb_1)
+#colnames(tb_1)
+#head(tb_1)
 
-# filter
-tb2 <- tb %>% filter(identity >= min_iden, match >= min_len)
+coords.1 <- tb_1 %>% filter( identity > min_iden , match > min_len )
+#print(dim(coords.1))
 
-# prepare labels
-query_hap <- unique(gsub("_chr.*$", "", tb2$qID))
-ref_hap <- unique(gsub("_chr.*$", "", tb2$tID))
+if (dim(coords.1)[1]==0) {
+ coords.1 <- tibble(tStart = 0 , qStart = 0  , tStop = 0 , qStop = 0 , qID = nucmer_query , tID = nucmer_ref , identity = 0)
+}
 
-# prepare data
-tb3 <- tb2 %>%
-  mutate(tID = factor(tID, levels = unique(tID)[order(unique(tID))]),
-         qID = factor(qID, levels = rev(unique(qID)[order(unique(qID))])))
+# Columns:
+# tID
+# tLen
+# tStart
+# tStop
+# qID
+# qLen
+# qStart
+# qStop
+# identity
+# match
 
+# subset
+
+refLen <- sum(coords.1 %>% select(tID, tLen) %>% distinct() %>% select(tLen) )
+queryLen <- sum(coords.1 %>% select(qID, qLen) %>% distinct() %>% select(qLen) )
+
+tLen_tb <- coords.1 %>% select(tID, tLen) %>% distinct() %>% arrange(tID) %>% mutate( cum_len = cumsum(tLen)[row_number()] , offset = ifelse ( row_number()==1 , 0, lag(cum_len) ) , ID = "Target")
+
+qLen_tb <- coords.1 %>% select(qID, qLen) %>% distinct() %>% arrange(qID) %>% mutate( cum_len = cumsum(qLen)[row_number()] , offset = ifelse ( row_number()==1 , 0, lag(cum_len) ) , ID = "Query")
+
+coords.2 <- left_join ( left_join ( coords.1 , tLen_tb , by = c( "tID" =  "tID" )  , all.x = TRUE) , qLen_tb , by = c( "qID" =  "qID" )  , all.x = TRUE)
+
+colnames(coords.2) <- c( "T_name", "T_len" , "T_start", "T_stop", "Q_name", "Q_len", "Q_start", "Q_stop", "iden",    "T_hit_len", "T_len.2", "T_cum_len", "T_offset", "T_ID", "Q_length.2", "Q_cum_len", "Q_offset", "Q_ID")
+
+coords.3 <- coords.2 %>% mutate( Q_start_global = Q_start + Q_offset , Q_stop_global = Q_stop + Q_offset , T_start_global = T_start + T_offset , T_stop_global = T_stop + T_offset )
+
+```
+
+
+```{r}
 # plot
-p <- ggplot(tb3) + 
-  geom_segment(aes(x = tStart, y = qStart, xend = tStop, yend = qStop,))+
-  #geom_point(aes(x = tStart, y = qStart), size = 0.009) +
-  #geom_point(aes(x = tStop, y = qStop),size = 0.009) +
-  facet_grid(rows = vars(qID), cols = vars(tID), scales = "free", space = "free", switch = "y") +
-  labs(x = paste0("ref ", ref_hap), y = paste0("query ", query_hap))
+p0 <- ggplot() +
+  geom_segment( data = coords.3 ,
+     aes(
+       x = T_start_global,
+       xend = T_stop_global,
+       y = Q_start_global,
+       yend = Q_stop_global,
+       text = sprintf(
+		      'Target: %s - Target start: %s - Target end: %s<br>Hit length: %s<br>Query: %s - Query start: %s - Query end: %s' ,
+		      T_name,
+		      T_start,
+		      T_stop,
+		      T_hit_len,
+		      Q_name,
+		      Q_start,
+		      Q_stop
+       )
+     )
+   ) +
+   scale_x_continuous(breaks = tLen_tb$cum_len , labels = tLen_tb$tID , limits = c( 0 , max( refLen , queryLen ) ) ) +
+   scale_y_continuous(breaks = qLen_tb$cum_len , labels = qLen_tb$qID , limits = c( 0 , max( refLen , queryLen ) ) ) +
+   labs(title = nucmer_title, x = "Target sequence - Position (bp)" , y = "Query sequence - Position (bp)")
 
-p <- p + theme(plot.title = element_text(color="black", size=10, face="plain", margin=margin(t=0,r=0,b=1,l=0,"mm")),
-               axis.title.x = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
-               axis.title.y = element_text(color="black", size=10, face="plain", margin=margin(t=0,r=1,b=0,l=1,"mm")),
-			   axis.text.x = element_blank(),
-			   axis.text.y = element_blank(),
-			   axis.line.x = element_blank(),
-			   axis.line.y = element_blank(),
-			   axis.ticks.x = element_blank(),
-			   axis.ticks.y = element_blank(),
-			   plot.background = element_blank(),
-			   panel.background = element_rect(fill = "#fbfbfb", colour = "#fbfbfb", size = 0.5, linetype = "solid"),
-			   panel.grid.major.y = element_blank(),
-			   panel.grid.major.x = element_blank(),
-			   panel.grid.minor.y = element_blank(),
-			   panel.grid.minor.x = element_blank(),
-			   panel.spacing = unit(0.1, "lines"),
-			   strip.text.x = element_text(color="black", size=8, face="plain", angle = 90 ),
-			   strip.text.y.left = element_text(color="black", size=8, face="plain", angle = 0),
-			   plot.margin=unit(c(1,1,1,1),"mm"),
-			   legend.position="none",
-			   aspect.ratio = 1,
+p0 <- p0 + theme(plot.title = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+               axis.title.x = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+               axis.title.y = element_text(color="black", size=10, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm")),
+               axis.text.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5 , angle = 45 ),
+               axis.text.y = element_text(color="black", size=8, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm"), vjust = 0.5 , angle = 45 ),
+               axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+               axis.line.y = element_line(color="black", size=0.5, linetype="solid"),
+               axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+               axis.ticks.y = element_line(color="black", size=0.5, linetype="solid"),
+               plot.background = element_blank(),
+               panel.background = element_blank(),
+               panel.grid.major.y = element_line(color="gray80", size=0.2, linetype="solid") ,
+               panel.grid.major.x = element_line(color="gray80", size=0.2, linetype="solid"),
+               panel.grid.minor.y = element_blank(),
+               panel.grid.minor.x = element_blank(),
+               plot.margin=unit(c(1,1,1,1),"mm"),
+               legend.position="right",
+               aspect.ratio = 1,
 )
 
-# export
-ggsave(p, filename = paste0( filename ,".pdf") , width = 7, height = 7)
-ggsave(p, filename = paste0( filename ,".png") , width = 7, height = 7)
+pl0 <- ggplotly( p0 )
+
+ggsave(p0, filename = paste0( filename ,".pdf") , width = 7, height = 7)
+ggsave(p0, filename = paste0( filename ,".png") , width = 7, height = 7)
 ```
+
+
 
 Dotplot
 =====
-```{r echo=FALSE,fig.height=10,fig.width=10, fig.keep = "none"}
-svgPanZoom(p)
+```{r}
+### Dotplot of alignment results
+ggplotly( p0, tooltip = "text" , width = 900, height = 900)
 ```
 
