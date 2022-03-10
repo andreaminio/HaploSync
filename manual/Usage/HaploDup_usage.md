@@ -156,7 +156,7 @@ usage: HaploDup.py [-h] [-f genome.fasta [Required]]
     * `diploid_gene_count_trace.hap1.rda`, `diploid_gene_count_trace.hap2.rda`: RDA files produced by R that create the plots from trace counts
 * `${NAME}.structure_comparison`: If `--rejected_list` is given, this folder will contain the reports from the comparison of unplaced sequences 
   * `index.rejected_sequences.html`: This file can be opened in a web-browser to navigate report files
-  * See [Unplaced sequence rejection QC report](../Workflows/pseudomolecule_QC.md#2.3.2---Unplaced sequence-rejection-QC-report)
+  * See [Unplaced sequence rejection QC report](../Workflows/pseudomolecule_QC.md#2.3.2---Unplaced-sequence-rejection-QC-report)
 
 ## How it works
 
