@@ -109,7 +109,7 @@ In this phase, we note the region coordinates and check the gene copy number in 
 
 ## 2.5 - Verify duplication by gene hit counts
 
-The gene copy count plot shows how many copies are found in each haplotype for each gene annotated on the sequence. The interactive plot can show the count of hits for each haplotype in (A) and the coordinates of the gene locus start. These coordinates will reflect the Y coordinates on the corresponding sequence dotplot aginst the reference. If [“Compare data on hover” is selected](Screenshot-2020-06-23-at-13.40.27.png)), both haplotype labels are shown at same time.
+The gene copy count plot shows how many copies are found in each haplotype for each gene annotated on the sequence. The interactive plot can show the count of hits for each haplotype in (A) and the coordinates of the gene locus start. These coordinates will reflect the Y coordinates on the corresponding sequence dotplot aginst the reference. If [“Compare data on hover” is selected](hover.png)), both haplotype labels are shown at same time.
 ![generate_pseudomolecules.hit_counts](generate_pseudomolecules.hit_counts.png)
 
 The regions selected in step 2.1 are candidates for breakpoint selection. However, first we must confirm whether the duplication event is due to an error so that the guide sequence structure is not overfit.
