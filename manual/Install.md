@@ -22,7 +22,7 @@ The tools below run the pipeline. It is not necessary for these to be in your `$
 * Mandatory
   * [Minimap2](https://github.com/lh3/minimap2)
   * [Gmap](http://research-pub.gene.com/gmap/)
-    * **Note**: we suggest installing version *2019.09.12*, which is the last version not affected by a bug (@2020.07.16). In version *2020.06.01* and *2020.04.08*, separators between some attributes are missing in the gff3 output. While HaploSync can handle this known issue, the result may be parsed incorrectly if you use the tool independently.
+    * **Note**: we suggest installing version *2019.09.12*, which is the last version not affected by a bug (@2020.07.16). In version *2020.06.01* and *2020.04.08*, separators between some attributes are missing in the gff3 output. While HaploSync can handle this known issue, the result may be parsed incorrectly if you use the tool results independently.
   * [Mummer v.4](https://mummer4.github.io/)
     * **Note 1**: Mummer v3 is not compatible because it does not permit multi-threading. 
     * **Note 2**: Some releases of Mummer v.4 < beta 5 (4.0.0.beta5) should be avoided; a bug allows the tool to report hits between large regions of Ns in the sequences. This does not affect the assembly performance of HaploSync, but dotplots will report unexpected gap-to-gap hits. Installation of the tool through Conda should be avoided. The Bioconda repository only hosts a beta2 version of the tool (@2020.07.16), which is affected by the bug.   
