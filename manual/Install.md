@@ -1,48 +1,8 @@
 # HaploSync installation
 
-## Prerequisites
+We suggest installing the tool through a dedicated virtual environment (even when possessing sudo credentials) to avoid conflicts with their existing global environment. 
 
-### Python libraries
-
-  - Python ver **>2.7**
-  - networkx ver **>2.1** (previous versions are incompatible because of different implementation of some functions)
-  - Biopython
-  - numpy
-  - yaml
-  - scipy
-  - toml
-  - datetime
-  - pandas
-  - multiprocessing
-
-### Tools
-
-The tools below run the pipeline. It is not necessary for these to be in your `$PATH`; see [Setup](#Setup) to set custom paths for these tools.
-
-* Mandatory
-  * [Minimap2](https://github.com/lh3/minimap2)
-  * [Gmap](http://research-pub.gene.com/gmap/)
-    * **Note**: we suggest installing version *2019.09.12*, which is the last version not affected by a bug (@2020.07.16). In version *2020.06.01* and *2020.04.08*, separators between some attributes are missing in the gff3 output. While HaploSync can handle this known issue, the result may be parsed incorrectly if you use the tool independently.
-  * [Mummer v.4](https://mummer4.github.io/)
-    * **Note 1**: Mummer v3 is not compatible because it does not permit multi-threading. 
-    * **Note 2**: Some releases of Mummer v.4 < beta 5 (4.0.0.beta5) should be avoided; a bug allows the tool to report hits between large regions of Ns in the sequences. This does not affect the assembly performance of HaploSync, but dotplots will report unexpected gap-to-gap hits. Installation of the tool through Conda should be avoided. The Bioconda repository only hosts a beta2 version of the tool (@2020.07.16), which is affected by the bug.   
-  * [Samtools](https://github.com/samtools)
-  * [Bedtools](https://bedtools.readthedocs.io/en/latest/) 
-  * [R](https://www.r-project.org/) v4.0 or higher, with the following libraries: 
-    * [plotly](https://plotly-r.com/)
-    * [optparse](https://github.com/trevorld/r-optparse) 
-    * [plyr](https://github.com/hadley/plyr)
-    * svgPanZoom
-    * knitr
-      * **Note**: version 1.29 required 
-    * ggplot2
-      * **Note**: version 3.3.2 required
-* Optional
-  * [Blat](http://www.kentinformatics.com/)
-
-## Virtual environment
-
-If the user does not have sudo credentials and/or needs to avoid conflicts with their existing environment, creating a virtual environment in which to use the tool is **strongly recommended**. Here we report how to build a Miniconda environment.
+## Conda virtual environment installation
 
 1. Visit the [Miniconda website](https://docs.conda.io/en/latest/miniconda.html) and download the tool appropriate for your system. Miniconda2 is recommended because python 2.7 is necessary.
 
@@ -61,78 +21,7 @@ If the user does not have sudo credentials and/or needs to avoid conflicts with 
    source /path/to/virtualenv/miniconda2_HaploSync/bin/activate
    ```
 
-4. Set up the environment
-
-   ```bash
-   pip install Cython
-   pip install networkx==2.1
-   pip install biopython==1.76
-   pip install pandas
-   pip install numpy scipy toml datetime multiprocessing pyyaml matplotlib
-   ```
-
-5. Install a local version of the 3rd party tools
-
-   * Use coda to automatise the installation
-
-     ```bash
-     conda install libgit2
-     conda install -c conda-forge parallel
-     conda install -c bioconda minimap2 samtools bedtools blat
-     conda install -c bioconda gmap=2019.09.12
-     ```
-
-6. Install Mummer v4
-
-   * Download [Mummer version 4.0.0.beta5](https://github.com/mummer4/mummer/releases/tag/v4.0.0.beta5) or later from GitHub and install the tool in the Conda environment 
-
-     ```bash
-     tar -xzf ../mummer-4.0.0beta5.tar.gz
-     cd mummer-4.0.0beta5/
-     ./configure --prefix=$CONDA_PREFIX
-     make install
-     ```
-   
-7. Install R and necessary libraries
-
-     ```bash
-     conda install -c conda-forge r-base=4.0.2
-     conda install -c conda-forge r-curl=4.3
-     ```
-
-     * load an R interactive shell checking to be using the conda installation:
-
-       ```bash
-       which R
-       R
-       ```
-
-     * Install necessary R packages:
-
-       ```R
-       install.packages("tidyverse")
-       install.packages("optparse")
-       install.packages("plotly")
-       install.packages("plyr")
-       install.packages("flexdashboard")
-       install.packages("gridExtra")
-       install.packages("devtools")
-       require(devtools)
-       install_version("knitr", version = "1.29", repos = "http://cran.us.r-project.org")
-       install_version("ggplot2", version = "3.3.2", repos = "http://cran.us.r-project.org")
-       install.packages("svglite")
-       install.packages("gridSVG")
-       install.packages("svgPanZoom")
-       install.packages("ggrepel")
-       ```
-
-8. Load the environment (**this should be done before running HaploSync tools**)
-
-   ```bash
-   source /path/to/virtualenv/miniconda2_HaploSync/bin/activate
-   ```
-
-## Install HaploSync
+## Download HaploSync
 
 ### From GitHub repo
 
@@ -150,13 +39,147 @@ Install HaploSync by running the following in your preferred working directory:
   git clone https://github.com/andreaminio/HaploSync
   ```
 
-  This will create a copy of the tool commands.
+This will create a copy of the tool commands.
 
 ### From release tarball
 
 Download and unpack the desired release version from [the releases reporsitory](https://github.com/andreaminio/HaploSync/releases).
 
-## Setup custom paths (Optional)
+
+## Install prerequisites 
+To install the prerequisites for HaploSync in a new conda environment, we suggest using the dedicated installing script. Alternatively, we provide details for a custom manual installation of all the prerequisites both within and outside a conda environment.   
+
+### Through the installer
+The `install.sh` script will perform an automatic installation of and provide all the necessary libraries and tools.
+  * Type:
+    ```bash
+    source /path/to/virtualenv/miniconda2_HaploSync/bin/activate
+    bash install.sh
+    ```
+
+### Alternative - Install prerequisites manually in conda
+To manually setup the conda environment, be sure to install all the following prerequisites
+
+1. Activate the virtual environment:
+    ```bash
+    source /path/to/virtualenv/miniconda2_HaploSync/bin/activate
+    ```
+2. Install python libraries: 
+   ```bash
+   pip install Cython
+   pip install networkx==2.1
+   pip install biopython==1.76
+   pip install pandas
+   pip install numpy scipy toml datetime multiprocessing pyyaml matplotlib
+   ```
+
+3. Install a local version of the 3rd party tools
+   ```bash
+   conda install libgit2
+   conda install -c conda-forge parallel
+   conda install -c bioconda minimap2 samtools bedtools blat
+   conda install -c bioconda gmap=2019.09.12
+   ```
+
+4. Install Mummer v4
+   * Download [Mummer version 4.0.0.beta5](https://github.com/mummer4/mummer/releases/tag/v4.0.0.beta5) or later from GitHub and install the tool in the Conda environment
+     ```bash
+     tar -xzf ../mummer-4.0.0beta5.tar.gz
+     cd mummer-4.0.0beta5/
+     ./configure --prefix=$CONDA_PREFIX
+     make install
+     ```
+   
+5. Install R and necessary libraries
+     * Install R
+       ```bash
+       conda install -c conda-forge r-base=4.0.2
+       conda install -c conda-forge r-curl=4.3
+       ```
+     * load an R interactive shell checking to be using the conda installation:
+       ```bash
+       R
+       ```
+
+     * Install necessary R packages:
+       ```R
+       install.packages("tidyverse")
+       install.packages("optparse")
+       install.packages("plotly")
+       install.packages("plyr")
+       install.packages("flexdashboard")
+       install.packages("gridExtra")
+       install.packages("devtools")
+       require(devtools)
+       install_version("knitr", version = "1.29", repos = "http://cran.us.r-project.org")
+       install_version("ggplot2", version = "3.3.2", repos = "http://cran.us.r-project.org")
+       install.packages("svglite")
+       install.packages("gridSVG")
+       install.packages("svgPanZoom")
+       install.packages("ggrepel")
+       ```
+
+### Alternative - Manual installation of depences
+To use HaploSync, be sure to have installed the follwing tools, libraries and packages 
+
+#### Python libraries
+Make sure to install the following python libraries:
+  - Python ver **>2.7**
+  - networkx ver **>2.1** (previous versions are incompatible because of different function implementation)
+  - Biopython
+  - numpy
+  - yaml
+  - scipy
+  - toml
+  - datetime
+  - pandas
+  - multiprocessing
+
+#### Tools
+
+The tools below run the pipeline. It is not necessary for these to be in your `$PATH`; see [Setup](#Setup) to set custom paths for these tools.
+
+* Mandatory
+  * [Minimap2](https://github.com/lh3/minimap2)
+  * [Gmap](http://research-pub.gene.com/gmap/)
+    * **Note**: we suggest installing version *2019.09.12*, which is the last version not affected by a bug (@2020.07.16). In version *2020.06.01* and *2020.04.08*, separators between some attributes are missing in the gff3 output. While HaploSync can handle this known issue, the result may be parsed incorrectly if you use the tool independently.
+  * [Mummer v.4](https://mummer4.github.io/) , [Mummer version 4.0.0.beta5 download](https://github.com/mummer4/mummer/releases/tag/v4.0.0.beta5)
+    * **Note 1**: Mummer v3 is not compatible because it does not permit multi-threading. 
+    * **Note 2**: Some releases of Mummer v.4 < beta 5 (4.0.0.beta5) should be avoided; a bug allows the tool to report hits between large regions of Ns in the sequences. This does not affect the assembly performance of HaploSync, but dotplots will report unexpected gap-to-gap hits. Installation of the tool through Conda should be avoided. The Bioconda repository only hosts a beta2 version of the tool (@2020.07.16), which is affected by the bug.   
+  * [Samtools](https://github.com/samtools)
+  * [Bedtools](https://bedtools.readthedocs.io/en/latest/) 
+  * [R](https://www.r-project.org/) v4.0 or higher, with the following libraries: 
+    * [plotly](https://plotly-r.com/)
+    * [optparse](https://github.com/trevorld/r-optparse) 
+    * [plyr](https://github.com/hadley/plyr)
+    * svgPanZoom
+    * knitr
+      * **Note**: version 1.29 required 
+    * ggplot2
+      * **Note**: version 3.3.2 required
+* Optional
+  * [Blat](http://www.kentinformatics.com/)
+
+#### R Packages ####
+* In R, install the package useing the following command lines:
+    ```
+    install.packages("tidyverse")
+    install.packages("optparse")
+    install.packages("plotly")
+    install.packages("plyr")
+    install.packages("flexdashboard")
+    install.packages("gridExtra")
+    install.packages("devtools")
+    require(devtools)
+    install_version("knitr", version = "1.29", repos = "http://cran.us.r-project.org")
+    install_version("ggplot2", version = "3.3.2", repos = "http://cran.us.r-project.org")
+    install.packages("svglite")
+    install.packages("gridSVG")
+    install.packages("svgPanZoom")
+    install.packages("ggrepel")
+  ```
+
+#### Setup custom paths with custom manual installation of tools
 
 If you want to use compatible tool installations that are not accessible directly in your `$PATH` you can configure the tool for use in custom paths.
 
