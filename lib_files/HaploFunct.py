@@ -5395,7 +5395,7 @@ def remove_sequence_from_graph( unwanted_ids_list , chr_id , max_size, markers_l
 		new_blacklist.append(element)
 	print >> sys.stderr, "##### used blacklist: " + str(new_blacklist)
 	print >> sys.stderr, "##### used forced list: " + str(forced_list)
-	new_graph = markers_to_network( markers_list , chr_id , max_size, forced_list , new_blacklist , "." )
+	new_graph = markers_to_network( markers_list , chr_id , max_size, forced_list , new_blacklist , "incompatibility" )
 	return new_graph
 
 
