@@ -295,10 +295,10 @@ def make_forced_graph( hit_list , max_distance , forced_sorted_list, blacklist, 
 					#edge = hit_graph[int(Tstart)][int(Tstop)]
 					#print >> sys.stderr , "####### edge: " + str(Tstart) + " " + str(Tstop) + " - " + ", ".join( str(key) + ": " + str(edge[key]) for key in sorted(edge.keys()) )
 
-			else:
-				print >> sys.stdout , "----- Error: " + Qid + " present both as required and blacklisted."
-				print >> sys.stderr , "##### Error: " + Qid + " present both as required and blacklisted."
-				sys.exit(3)
+		#	else:
+		#		print >> sys.stdout , "----- Error: " + Qid + " present both as required and blacklisted."
+		#		print >> sys.stderr , "##### Error: " + Qid + " present both as required and blacklisted."
+		#		sys.exit(3)
 
 	# Forced Qids mappings sanity check
 	print >> sys.stdout , "---- Testing required query sequences mapping positions order"
