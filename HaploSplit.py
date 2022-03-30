@@ -1299,7 +1299,7 @@ def main() :
 					new_forced = []
 				while not best_found :
 					if not new_forced == [] :
-						hit_graph = make_forced_graph(hits_1, int(options.distance1) , new_forced , unwanted_to_remove_list  , options.Require1 + ".err.txt" )
+						hit_graph = make_forced_graph(hits_1, int(options.distance1) , new_forced , unwanted_to_remove_list  , "required.err.txt" )
 					else :
 						hit_graph = make_graph(hits_1, int(options.distance1) , unwanted_to_remove_list )
 					print >> sys.stderr, hit_graph.edges.data()
@@ -1308,7 +1308,7 @@ def main() :
 						print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] ==== Increased allowed gap to " + str(distance1)
 						print >> sys.stderr, "#### Rebuilding increased allowed gap to " + str(distance1)
 						if options.Require2 :
-							hit_graph = make_forced_graph(hits_1, distance1 , forced_list_1[Target_sequence] , unwanted_to_remove_list  , options.Require1 + ".err.txt" )
+							hit_graph = make_forced_graph(hits_1, distance1 , forced_list_1[Target_sequence] , unwanted_to_remove_list  , "required.err.txt" )
 						else :
 							hit_graph = make_graph(hits_1, distance1 , unwanted_to_remove_list )
 					# Select first
