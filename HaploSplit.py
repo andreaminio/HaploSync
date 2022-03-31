@@ -2203,9 +2203,9 @@ def main() :
 							print >> sys.stderr ,  "#### To discard because of " + seq_id + " in hap1: " + str(known_groups_by_seqid[seq_id])
 					for forced_seq_id in new_forced_list_2[Target_sequence] :
 						if forced_seq_id in unwanted_to_remove_list :
-							print >> sys.stdout , "[ERROR] Conflicting sequences constrains: Requested sequences should belong to Haplotype 1"
-							print >> sys.stderr , "[ERROR] Requested sequence " + forced_seq_id + " is in conflict with Haplotype 1 reconstruction as known to belong to the same haplotype."
-							sys.exit(1)
+							print >> sys.stdout , "[WARNING] Conflicting sequences constrains: Requested sequences should belong to Haplotype 1"
+							print >> sys.stderr , "[WARNING] Requested sequence " + forced_seq_id + " is in conflict with Haplotype 1 reconstruction as known to belong to the same haplotype. It will not be used."
+							new_forced_list_2[Target_sequence].remove(forced_seq_id)
 
 					unwanted_to_remove_list = list(set(unwanted_to_remove_list))
 					unwanted_to_reuse_list = []
