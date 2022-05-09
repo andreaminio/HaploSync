@@ -3380,7 +3380,7 @@ def main() :
 				# make_no_genes_html_report( coords_file , haplodup_dir , outdir_name , queryID  , refID , "3000" , "90" )
 
 				if comparison == "Hap1_vs_Reference" :
-					for queryID in sorted(hap1_ids) :
+					for queryID in sorted(hap1_ids.split(",")) :
 						refID = hap1_to_ref[queryID]
 						plot_files[comparison]["Reports"][queryID] = {}
 						plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, "3000", "90")
@@ -3397,7 +3397,7 @@ def main() :
 				elif comparison == "Hap1_vs_Hap1" :
 					continue
 				elif comparison == "Hap2_vs_Reference" :
-					for queryID in sorted(hap2_ids) :
+					for queryID in sorted(hap2_ids.split(",")) :
 						refID = hap2_to_ref[queryID]
 						plot_files[comparison]["Reports"][queryID] = {}
 						plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, "3000", "90")
@@ -3412,13 +3412,13 @@ def main() :
 						else :
 							print >> sys.stderr , "[WARNING] Reference sequence " + queryID + " has no related sequence in Hap2"
 				elif comparison == "Hap2_vs_Hap1" :
-					for queryID in sorted(hap2_ids) :
+					for queryID in sorted(hap2_ids.split(",")) :
 						refID = hap2_to_hap1[queryID]
 						plot_files[comparison]["Reports"][queryID] = {}
 						plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, "3000", "90")
 						plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
 				elif comparison == "Hap1_vs_Hap2" :
-					for queryID in sorted(hap1_ids) :
+					for queryID in sorted(hap1_ids.split(",")) :
 						if queryID in hap1_to_hap2 :
 							refID = hap1_to_hap2[queryID]
 							plot_files[comparison]["Reports"][queryID] = {}
