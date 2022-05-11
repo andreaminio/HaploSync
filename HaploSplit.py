@@ -3156,7 +3156,8 @@ def main() :
 			indexing_err_file.close()
 
 			# Gmap CDS on results
-			print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] === Mapping with Gmap "
+			print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] === Mapping with Gmap on Hap1"
+			print >> sys.stderr, "### Mapping with GMAP on Hap1"
 			gmap_results_1 = haplodup_dir + "/CDS.on.hap1.gmap.gff3"
 			gmap_1_gff3 = open( gmap_results_1 , "w" )
 			gmap_err = open( gmap_results_1 + ".err" , "w" )
@@ -3182,7 +3183,8 @@ def main() :
 			indexing_out_file.close()
 			indexing_err_file.close()
 			# Gmap CDS on results
-			print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] === Mapping with Gmap "
+			print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] === Mapping with Gmap on Hap2"
+			print >> sys.stderr, "### Mapping with GMAP on Hap2"
 			gmap_results_2 = haplodup_dir + "/CDS.on.hap2.gmap.gff3"
 			gmap_2_gff3 = open( gmap_results_2 , "w" )
 			gmap_err = open( gmap_results_2 + ".err" , "w" )
