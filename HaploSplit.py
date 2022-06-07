@@ -1603,7 +1603,7 @@ def main() :
 			fasta_len_dict[ref_id] = len(ref_fasta)
 
 		map_used = []
-
+		query_fasta_db = read_fasta(options.query)
 		if options.marker_map :
 			# Best tiling path with marker paths were already generated
 			# Map unplaced everywhere and placed on their own chromosome
