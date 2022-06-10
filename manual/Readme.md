@@ -9,6 +9,11 @@ HaploSync was developed to improve the quality of diploid genome assemblies. Thi
 * assesses the quality of assembled sequences, and
 * edits sequences. 
 
+## Citations
+  **Assembly of complete diploid phased chromosomes from draft genome sequences**  
+  Andrea Minio, Noé Cochetel, Amanda M Vondras, Mélanie Massonnet, Dario Cantu  
+  _G3 Genes|Genomes|Genetics, 2022, jkac143_; doi: https://doi.org/10.1093/g3journal/jkac143
+
 ## Tools
 
 * **HaploSplit**
