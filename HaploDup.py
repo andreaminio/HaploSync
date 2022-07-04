@@ -74,9 +74,11 @@ def main() :
 	parser.add_argument("--skip_dotplots_by_chr" , dest="skip_dotplots", default=False, action="store_true",
 						help="If set, prevents the production of dotplots comparing each chromosome sequence to any other chromosome sequence. Whole genome dotplot is produced anyway. [Default: overwrite]")
 
+	# TODO: allow to use a custom set of CDS sequences instead of annotations
+	parser.add_argument("-c", "--cds", default=False, dest="cds",
+						#help="CDS sequences to use to generate a temporary annotation", metavar="cds.fasta [Required]")
+						help=argparse.SUPPRESS )
 
-	#parser.add_argument("-c", "--cds", default=False, dest="cds",
-	#					help="CDS sequences to use to generate a temporary annotation", metavar="cds.fasta [Required]")
 	# Mapper selection is hidden as only gmap alignment is supported
 	parser.add_argument("-m" , "--mapper", dest="mapper", default="gmap",
 						#help="Mapping tool to use [Default: gmap]" , metavar="[gmap|blat]" )
