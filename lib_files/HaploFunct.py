@@ -3719,6 +3719,7 @@ def make_no_genes_html_report(coords, coords_self, workdir, output_dir, queryID,
 				script=scriptDirectory + "/ChrReport_nogene.html.nostructure.nolegacy.nomarkers.Rmd"
 
 	report_file = queryID + ".on." + refID + ".report.html"
+	output_dir = os.path.abspath(output_dir)
 	log_connection = open( output_dir + "/." + report_file + ".log" , 'w')
 	err_connection = open( output_dir + "/." + report_file + ".err", 'w')
 	command = "Rscript -e 'library(rmarkdown) ; rmarkdown::render(\"" + script + "\" , knit_root_dir = \"" + workdir + "\" , output_file = \"" + report_file + "\" , output_dir = \"" + output_dir + "\" , params=list(coords = \"" + coords + "\" , coords_self = \"" + coords_self + "\" , min_align = \"" + str(min_align) + "\" , similarity = \"" + str(similarity) + "\" , queryID = \"" + queryID + "\" , refID = \"" + refID + "\" , structure = \"" + structure + "\" , legacy = \"" + legacy + "\" , markers = \"" + markers + "\" , dup_markers = \"" + dup_markers + "\" ))'"
