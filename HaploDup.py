@@ -75,7 +75,7 @@ def main() :
 						help="If set, prevents the production of dotplots comparing each chromosome sequence to any other chromosome sequence. Whole genome dotplot is produced anyway. [Default: overwrite]")
 
 	# TODO: allow to use a custom set of CDS sequences instead of annotations
-	parser.add_argument("-c", "--cds", default=False, dest="cds",
+	parser.add_argument("--cds", default=False, dest="cds",
 						#help="CDS sequences to use to generate a temporary annotation", metavar="cds.fasta [Required]")
 						help=argparse.SUPPRESS )
 
