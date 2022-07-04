@@ -111,13 +111,13 @@ def main() :
 		parser.print_help()
 		sys.exit(1)
 
-	if not ( options.gff or options.cds ) :
-		print >> sys.stderr , "[ERROR] Annotation file missing"
-		parser.print_help()
-		sys.exit(1)
+	#if not ( options.gff or options.cds ) :
+	#	print >> sys.stderr , "[ERROR] Annotation file missing"
+	#	parser.print_help()
+	#	sys.exit(1)
 
 	if not options.corr :
-		print >> sys.stderr , "[ERROR] Annotation file or and CDS sequences missing"
+		print >> sys.stderr , "[ERROR] Correspondence file missing "
 		parser.print_help()
 		sys.exit(1)
 
