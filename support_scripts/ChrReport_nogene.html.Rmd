@@ -343,97 +343,98 @@ pl15 <- ggplotly(p15, tooltip = "text") %>% layout(annotations = d)
 ```
 
 ```{r}
-p16 <- ggplot(structure_trace_r) +
-  geom_rect(
-    aes(
-      xmin = Start,
-      xmax = Stop,
-      ymin = 0 ,
-      ymax = 1 ,
-      #colour = Seq_Id,
-      fill = Seq_Id,
-      group = 3,
-      text = sprintf(
-        'Component sequence ID: %s<br>Component region: %s-%s<br>Orientation: %s',
-        Seq_Id, Start , Stop, orientation
-          )
-      ),
-       ) +
-  labs(colour = "" , fill="") +
-  scale_y_continuous(breaks = c( 0 ,1)) +
-  scale_x_continuous(limits = c(0, refLen)) +
-  labs(x = "Sequence position (bp)", y = "")
-
-p16 <- p16 +
-          theme(plot.title = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
-                 axis.title.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
-                 axis.title.y = element_text(color="black", size=8, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm")),
-                 axis.text.x = element_text(color="black", size=6, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
-                 axis.text.y = element_text(color="black", size=6, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm"), vjust = 0.5),
-                 axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
-                 axis.line.y = element_line(color="black", size=0.5, linetype="solid"),
-                 axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
-                 axis.ticks.y = element_line(color="black", size=0.5, linetype="solid"),
-                 plot.background = element_blank(),
-                 panel.background = element_blank(),
-                 panel.grid.major.y = element_line(color="gray80", size=0.2, linetype="solid") ,
-                 panel.grid.major.x = element_line(color="gray80", size=0.2, linetype="solid"),
-                 panel.grid.minor.y = element_blank(),
-                 panel.grid.minor.x = element_blank(),
-                 plot.margin=unit(c(.7,.7,.7,.7),"mm"),
-               legend.position="right",
-               legend.margin = margin(10,10,10,10) ,
-               legend.box.margin = margin(10,10,10,10) ,
-            )
-
-pl16  <- ggplotly(p16, tooltip = "text" ) %>% layout(annotations = e)
+structure_trace_r
+#p16 <- ggplot(structure_trace_r) +
+#  geom_rect(
+#    aes(
+#      xmin = Start,
+#      xmax = Stop,
+#      ymin = 0 ,
+#      ymax = 1 ,
+#      #colour = Seq_Id,
+#      fill = Seq_Id,
+#      group = 3,
+#      text = sprintf(
+#        'Component sequence ID: %s<br>Component region: %s-%s<br>Orientation: %s',
+#        Seq_Id, Start , Stop, orientation
+#          )
+#      ),
+#       ) +
+#  labs(colour = "" , fill="") +
+#  scale_y_continuous(breaks = c( 0 ,1)) +
+#  scale_x_continuous(limits = c(0, refLen)) +
+#  labs(x = "Sequence position (bp)", y = "")
+#
+#p16 <- p16 +
+#          theme(plot.title = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+#                 axis.title.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+#                 axis.title.y = element_text(color="black", size=8, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm")),
+#                 axis.text.x = element_text(color="black", size=6, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
+#                 axis.text.y = element_text(color="black", size=6, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm"), vjust = 0.5),
+#                 axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+#                 axis.line.y = element_line(color="black", size=0.5, linetype="solid"),
+#                 axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+#                 axis.ticks.y = element_line(color="black", size=0.5, linetype="solid"),
+#                 plot.background = element_blank(),
+#                 panel.background = element_blank(),
+#                 panel.grid.major.y = element_line(color="gray80", size=0.2, linetype="solid") ,
+#                 panel.grid.major.x = element_line(color="gray80", size=0.2, linetype="solid"),
+#                 panel.grid.minor.y = element_blank(),
+#                 panel.grid.minor.x = element_blank(),
+#                 plot.margin=unit(c(.7,.7,.7,.7),"mm"),
+#               legend.position="right",
+#               legend.margin = margin(10,10,10,10) ,
+#               legend.box.margin = margin(10,10,10,10) ,
+#            )
+#
+#pl16  <- ggplotly(p16, tooltip = "text" ) %>% layout(annotations = e)
 ```
 
 ```{r}
-p17 <- ggplot(legacy_trace_r) +
-  geom_rect(
-    aes(
-      xmin = Start,
-      xmax = Stop,
-      ymin = 0 ,
-      ymax = 1 ,
-      #colour = Seq_Id,
-      fill = Seq_Id,
-      group = 3,
-      text = sprintf(
-        'Component sequence ID: %s<br>Component region: %s-%s<br>Orientation: %s',
-        Seq_Id, Start , Stop, orientation
-          )
-      ),
-       ) +
-  labs(colour = "" , fill="") +
-  scale_y_continuous(breaks = c( 0 ,1)) +
-  scale_x_continuous(limits = c(0, refLen)) +
-  labs(x = "Sequence position (bp)", y = "")
-
-p17 <- p17 +
-          theme(plot.title = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
-                 axis.title.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
-                 axis.title.y = element_text(color="black", size=8, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm")),
-                 axis.text.x = element_text(color="black", size=6, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
-                 axis.text.y = element_text(color="black", size=6, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm"), vjust = 0.5),
-                 axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
-                 axis.line.y = element_line(color="black", size=0.5, linetype="solid"),
-                 axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
-                 axis.ticks.y = element_line(color="black", size=0.5, linetype="solid"),
-                 plot.background = element_blank(),
-                 panel.background = element_blank(),
-                 panel.grid.major.y = element_line(color="gray80", size=0.2, linetype="solid") ,
-                 panel.grid.major.x = element_line(color="gray80", size=0.2, linetype="solid"),
-                 panel.grid.minor.y = element_blank(),
-                 panel.grid.minor.x = element_blank(),
-                 plot.margin=unit(c(.7,.7,.7,.7),"mm"),
-               legend.position="right",
-               legend.margin = margin(10,10,10,10) ,
-               legend.box.margin = margin(10,10,10,10) ,
-            )
-
-pl17  <- ggplotly(p17, tooltip = "text" ) %>% layout(annotations = f)
+#p17 <- ggplot(legacy_trace_r) +
+#  geom_rect(
+#    aes(
+#      xmin = Start,
+#      xmax = Stop,
+#      ymin = 0 ,
+#      ymax = 1 ,
+#      #colour = Seq_Id,
+#      fill = Seq_Id,
+#      group = 3,
+#      text = sprintf(
+#        'Component sequence ID: %s<br>Component region: %s-%s<br>Orientation: %s',
+#        Seq_Id, Start , Stop, orientation
+#          )
+#      ),
+#       ) +
+#  labs(colour = "" , fill="") +
+#  scale_y_continuous(breaks = c( 0 ,1)) +
+#  scale_x_continuous(limits = c(0, refLen)) +
+#  labs(x = "Sequence position (bp)", y = "")
+#
+#p17 <- p17 +
+#          theme(plot.title = element_text(color="black", size=10, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
+#                 axis.title.x = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm")),
+#                 axis.title.y = element_text(color="black", size=8, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm")),
+#                 axis.text.x = element_text(color="black", size=6, face="plain", margin=margin(t=1,r=0,b=0,l=0,"mm"), hjust = 0.5),
+#                 axis.text.y = element_text(color="black", size=6, face="plain", margin=margin(t=0,r=1,b=0,l=0,"mm"), vjust = 0.5),
+#                 axis.line.x = element_line(color="black", size=0.5, linetype="solid"),
+#                 axis.line.y = element_line(color="black", size=0.5, linetype="solid"),
+#                 axis.ticks.x = element_line(color="black", size=0.5, linetype="solid"),
+#                 axis.ticks.y = element_line(color="black", size=0.5, linetype="solid"),
+#                 plot.background = element_blank(),
+#                 panel.background = element_blank(),
+#                 panel.grid.major.y = element_line(color="gray80", size=0.2, linetype="solid") ,
+#                 panel.grid.major.x = element_line(color="gray80", size=0.2, linetype="solid"),
+#                 panel.grid.minor.y = element_blank(),
+#                 panel.grid.minor.x = element_blank(),
+#                 plot.margin=unit(c(.7,.7,.7,.7),"mm"),
+#               legend.position="right",
+#               legend.margin = margin(10,10,10,10) ,
+#               legend.box.margin = margin(10,10,10,10) ,
+#            )
+#
+#pl17  <- ggplotly(p17, tooltip = "text" ) %>% layout(annotations = f)
 ```
 
 
@@ -441,6 +442,10 @@ Dotplot
 =====
 ```{r}
 ### Dotplot of alignment results
-subplot( pl0 , pl16 , pl17 , style(pl14,showlegend = F) , style(pl15,showlegend = F) , nrows = 5, shareX = T , titleY = T , titleX=T , heights = c(0.68, 0.08 , 0.08 , 0.08 , 0.08 ))
+#subplot( pl0 , pl16 , pl17 , style(pl14,showlegend = F) , style(pl15,showlegend = F) , nrows = 5, shareX = T , titleY = T , titleX=T , heights = c(0.68, 0.08 , 0.08 , 0.08 , 0.08 ))
+
+pl0
+pl14
+pl15
 ```
 
