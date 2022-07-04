@@ -604,6 +604,7 @@ def main() :
 		test_1.close()
 		## Make Hap1 gene table
 		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] === Extracting loci positions on Hap1"
+		# TODO: correct filtering procedure
 		hap1_genes = gff3_filter2table_Hap(gff_db, "gene", "_Hap1_")
 		#print >> sys.stderr, "### hap1 gene"
 		#print >> sys.stderr, hap1_genes
@@ -792,8 +793,22 @@ def main() :
 		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] = Generating reports"
 
 		for comparison in coord_tables.keys() :
-			coords_file , coords_file_self = coord_tables[comparison]
 			plot_files[comparison]["Reports"] = {}
+			if isinstance(coord_tables[comparison], list):
+				if len(coord_tables[comparison]) == 2 :
+					coords_file , coords_file_self = coord_tables[comparison]
+				else :
+					print >> sys.stdout , "[ERROR] QC comparison with unexpected data content"
+					print >> sys.stderr , "[ERROR] QC comparison with unexpected data content: " + comparison + " >>> " + coord_tables[comparison]
+					sys.exit(1)
+			else :
+				if not coord_tables[comparison] == ""  :
+					coords_file = coord_tables[comparison]
+					coords_file_self = ""
+				else :
+					print >> sys.stdout , "[ERROR] QC comparison with unexpected data content"
+					print >> sys.stderr , "[ERROR] QC comparison " + comparison + " has no data content associated"
+					sys.exit(1)
 			print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == " + comparison
 			outdir_name = haplodup_dir + "/" + comparison
 			mkdir(outdir_name)
