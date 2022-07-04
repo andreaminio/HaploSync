@@ -812,46 +812,48 @@ def main() :
 			print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == " + comparison
 			outdir_name = haplodup_dir + "/" + comparison
 			mkdir(outdir_name)
-			# make_no_genes_html_report( coords_file , haplodup_dir , outdir_name , queryID  , refID , "3000" , "90" )
-
+			# make_no_genes_html_report( coords, coords_self, workdir, output_dir, queryID, refID, structure = "" , legacy = "" , markers = "" , dup_markers = "" , min_align ="3000", similarity ="90")
+			# make_no_genes_pdf_report(  coords, coords_self, workdir, output_dir, queryID, refID, structure = "" , legacy = "" , markers = "" , dup_markers = "" , min_align ="3000", similarity ="90")
 			if comparison == "Hap1_vs_Reference" :
 				for queryID in sorted(hap1_ids.split(",")) :
 					refID = hap1_to_ref[queryID]
 					plot_files[comparison]["Reports"][queryID] = {}
-					plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, hit_len , hit_iden)
-					plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, hit_len , hit_iden)
+																		# make_no_genes_html_report( coords      , coords_self,                                              workdir,      output_dir,  queryID, refID, structure = "" , legacy = ""           , markers = ""          , dup_markers = "" , min_align ="3000", similarity ="90")
+																		# make_no_genes_pdf_report(  coords      , coords_self,                                              workdir,      output_dir,  queryID, refID, structure = "" , legacy = ""           , markers = ""          , dup_markers = "" , min_align ="3000", similarity ="90")
+					plot_files[comparison]["Reports"][queryID]["html"] =  make_no_genes_html_report( os.path.basename(coords_file),      os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hit_len , hit_iden)
+					plot_files[comparison]["Reports"][queryID]["pdf"] =   make_no_genes_pdf_report(  coords_file ,                       coords_file_self,                   haplodup_dir, outdir_name, queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hit_len , hit_iden)
 			elif comparison == "Reference_vs_Hap1" :
 				for queryID in sorted(ref_ids) :
 					refID = ref_to_hap1[queryID]
 					plot_files[comparison]["Reports"][queryID] = {}
-					plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, hit_len , hit_iden)
-					plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, hit_len , hit_iden)
+					plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hit_len , hit_iden)
+					plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hit_len , hit_iden)
 			elif comparison == "Hap1_vs_Hap1" :
 				continue
 			elif comparison == "Hap2_vs_Reference" :
 				for queryID in sorted(hap2_ids.split(",")) :
 					refID = hap2_to_ref[queryID]
 					plot_files[comparison]["Reports"][queryID] = {}
-					plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, hit_len , hit_iden)
-					plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, hit_len , hit_iden)
+					plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hit_len , hit_iden)
+					plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hit_len , hit_iden)
 			elif comparison == "Reference_vs_Hap2" :
 				for queryID in sorted(ref_ids) :
 					refID = ref_to_hap2[queryID]
 					plot_files[comparison]["Reports"][queryID] = {}
-					plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, hit_len , hit_iden)
-					plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, hit_len , hit_iden)
+					plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hit_len , hit_iden)
+					plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hit_len , hit_iden)
 			elif comparison == "Hap2_vs_Hap1" :
 				for queryID in sorted(hap2_ids.split(",")) :
 					refID = hap2_to_hap1[queryID]
 					plot_files[comparison]["Reports"][queryID] = {}
-					plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, hit_len , hit_iden)
-					plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, hit_len , hit_iden)
+					plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hit_len , hit_iden)
+					plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hit_len , hit_iden)
 			elif comparison == "Hap1_vs_Hap2" :
 				for queryID in sorted(hap1_ids.split(",")) :
 					refID = hap1_to_hap2[queryID]
 					plot_files[comparison]["Reports"][queryID] = {}
-					plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, hit_len , hit_iden)
-					plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, hit_len , hit_iden)
+					plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hit_len , hit_iden)
+					plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, structure_file , legacy_structure_file , all_markers_file_name ,  dup_markers_file_name , hit_len , hit_iden)
 			elif comparison == "Hap2_vs_Hap2" :
 				continue
 			else :
