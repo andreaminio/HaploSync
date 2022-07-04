@@ -3757,7 +3757,7 @@ def make_no_genes_pdf_report(coords, coords_self, workdir, output_dir, queryID, 
 				e = "0"
 				script=scriptDirectory + "/ChrReport_nogene.pdf.nolegacy.nomarkers.R"
 	else :
-		a = 0
+		a = "0"
 		if not legacy == "":
 			l = workdir + "/" + legacy
 			if not markers == "":
@@ -3769,7 +3769,7 @@ def make_no_genes_pdf_report(coords, coords_self, workdir, output_dir, queryID, 
 				e = "0"
 				script=scriptDirectory + "/ChrReport_nogene.pdf.nostructure.nomarkers.R"
 		else :
-			l = 0
+			l = "0"
 			if not markers == "":
 				b = workdir + "/" + markers
 				e = workdir + "/" + dup_markers
