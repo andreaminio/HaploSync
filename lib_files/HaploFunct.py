@@ -3782,7 +3782,7 @@ def make_no_genes_pdf_report(coords, coords_self, workdir, output_dir, queryID, 
 	report_file = queryID + ".on." + refID + ".report.pdf"
 	log_connection = open(output_dir + "/." + report_file + ".log" , 'w')
 	err_connection = open(output_dir + "/." + report_file + ".err" , 'w' )
-	command = "Rscript --vanilla " + script + " -d " + output_dir + " -o " + report_file + "-c " + coords + " -s " + coords_self + " -m " + str(min_align) + " -i " + str(similarity) + " -q " + queryID + " -t " + refID + " -a " + a + " -l " + l + " -b " + b + " -e " + e
+	command = "Rscript --vanilla " + script + " -d " + output_dir + " -o " + report_file + " -c " + coords + " -s " + coords_self + " -m " + str(min_align) + " -i " + str(similarity) + " -q " + queryID + " -t " + refID + " -a " + a + " -l " + l + " -b " + b + " -e " + e
 	print >> sys.stderr , "#### Running command: " + command
 	reportProcess = subprocess.Popen( command , shell=True , stdout=log_connection , stderr=err_connection )
 	output, error = reportProcess.communicate()

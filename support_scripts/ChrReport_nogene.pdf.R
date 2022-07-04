@@ -97,11 +97,12 @@ all_marker_trace <- read_delim(markers_all_file,
                             delim = "\t",
                             col_names = c( "Chr" , "Start" , "Stop" , "Marker_Id") ,
                             )
+all_marker_trace
 dup_markers_trace <- read_delim(markers_dup_file,
                             delim = "\t",
                             col_names = c( "Chr" , "Start" , "Stop" , "Marker_Id") ,
                             )
-
+dup_markers_trace
 structure_trace <- read_delim(structure_file,
                             delim = "\t",
                             col_names = c( "Chr" , "Start" , "Stop" , "Seq_Id" , "orientation" ) ,
