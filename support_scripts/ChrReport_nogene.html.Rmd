@@ -74,13 +74,11 @@ all_marker_trace <- read_delim(markers_all_file,
                             delim = "\t",
                             col_names = c( "Chr" , "Start" , "Stop" , "Marker_Id") ,
                             )
-dim(all_marker_trace)
 
 dup_markers_trace <- read_delim(markers_dup_file,
                             delim = "\t",
                             col_names = c( "Chr" , "Start" , "Stop" , "Marker_Id") ,
                             )
-dim(dup_markers_trace)
 
 structure_trace <- read_delim(structure_file,
                             delim = "\t",
@@ -98,8 +96,11 @@ queryLen <- max(coords1$qLen)
 
 all_marker_trace_r <- all_marker_trace %>% filter(Chr==nucmer_ref )
 
-dim(dup_markers_trace)
-dup_markers_trace_r <- dup_markers_trace %>% filter(Chr==nucmer_ref )
+if (dim(dup_markers_trace_r)[1] == 0) {
+    dup_markers_trace_r <- dup_markers_trace
+    } else {
+    dup_markers_trace_r <- dup_markers_trace %>% filter(Chr==nucmer_ref )
+}
 
 structure_trace_r <- structure_trace %>% filter(Chr==nucmer_ref )
 legacy_trace_r <- legacy_trace %>% filter(Chr==nucmer_ref )
