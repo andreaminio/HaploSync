@@ -94,7 +94,12 @@ legacy_trace <- read_delim(legacy_file,
 refLen <- max(coords1$tLen)
 queryLen <- max(coords1$qLen)
 
-all_marker_trace_r <- all_marker_trace %>% filter(Chr==nucmer_ref )
+if (dim(all_marker_trace)[1] == 0) {
+    all_marker_trace_r <- all_marker_trace
+    } else {
+    all_marker_trace_r <- all_marker_trace %>% filter(Chr==nucmer_ref )
+}
+
 
 if (dim(dup_markers_trace)[1] == 0) {
     dup_markers_trace_r <- dup_markers_trace
@@ -210,6 +215,21 @@ pl0 <- ggplotly( p0, tooltip = "text")
 
 
 ```{r}
+if (dim(all_marker_trace_r)[1] == 0) {
+  filler = tibble(Start = 1 , Stop = refLen)
+  p14 <- ggplot() +
+    geom_rect( data= filler,
+               aes(
+                 xmin = Start,
+                 xmax = Stop,
+                 ymin = 0 ,
+                 ymax = 1 ,
+                 fill = "No marker",
+                 text = "No marker"
+               ) ,
+               show.legend = FALSE
+    )
+} else {
 p14 <- ggplot() +
   geom_rect( data=all_marker_trace_r ,
     aes(
@@ -232,6 +252,7 @@ p14 <- ggplot() +
   scale_x_continuous(limits = c(0, refLen)) +
   scale_y_continuous(breaks = c( 0 , 1)) +
   labs(x = "Sequence position (bp)", y = "")
+}
 
 p14 <- p14 +
           theme(plot.title = element_text(color="black", size=8, face="plain", margin=margin(t=1,r=0,b=1,l=0,"mm")),
