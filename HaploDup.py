@@ -513,6 +513,7 @@ def main() :
 
 
 	if options.gff :
+		gmap_results = haplodup_dir + "/CDS.on.genome.gmap.gff3"
 		# Map genes, generate copy number counts, render by chromosome reports
 		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] = Generating files about gene map count for fusion dedup"
 
