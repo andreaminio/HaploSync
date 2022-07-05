@@ -157,7 +157,14 @@ diploid_trace3 <- diploid_trace3 %>%
   mutate(DUP_test = as.numeric(DUP_test))
 
 all_marker_trace_r <- all_marker_trace %>% filter(Chr==nucmer_ref )
-dup_markers_trace_r <- dup_markers_trace %>% filter(Chr==nucmer_ref )
+
+if (dim(dup_markers_trace)[1] == 0) {
+  dup_markers_trace_r <- dup_markers_trace
+} else{
+   dup_markers_trace_r <- dup_markers_trace %>% filter(Chr==nucmer_ref )
+}
+
+
 
 
 # plot
