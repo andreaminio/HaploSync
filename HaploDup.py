@@ -519,7 +519,7 @@ def main() :
 		## Generate CDS sequences from first haplotype
 		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == Generating CDS sequences"
 		if options.reuse_gmap :
-			gmap_results = haplodup_dir + "/CDS.on.ref.gmap.gff3"
+			gmap_results = haplodup_dir + "/CDS.on.genome.gmap.gff3"
 
 		else :
 			print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == Mapping CDSs on genome assembly"
