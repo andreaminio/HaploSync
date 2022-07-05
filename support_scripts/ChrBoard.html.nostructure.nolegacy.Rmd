@@ -178,14 +178,16 @@ all_marker_trace_h1 <- all_marker_trace %>% filter(Chr==gmap_hap1 )
 all_marker_trace_h2 <- all_marker_trace %>% filter(Chr==gmap_hap2 )
 
 if (dim(dup_markers_trace)[1] == 0) {
-  dup_markers_trace_r <- dup_markers_trace
-} else{
-   dup_markers_trace_r <- dup_markers_trace %>% filter(Chr==nucmer_ref )
+    dup_markers_trace_r <- dup_markers_trace
+    dup_markers_trace_h1 <- dup_markers_trace
+    dup_markers_trace_h2 <- dup_markers_trace
+    } else{
+    dup_markers_trace_r <- dup_markers_trace %>% filter(Chr==nucmer_ref )
+    dup_markers_trace_h1 <- dup_markers_trace %>% filter(Chr==gmap_hap1 )
+    dup_markers_trace_h2 <- dup_markers_trace %>% filter(Chr==gmap_hap2 )
 }
 
 
-dup_markers_trace_h1 <- dup_markers_trace %>% filter(Chr==gmap_hap1 )
-dup_markers_trace_h2 <- dup_markers_trace %>% filter(Chr==gmap_hap2 )
 
 
 a <- list(
