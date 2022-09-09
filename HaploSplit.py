@@ -25,9 +25,9 @@ def main() :
 	parser.add_argument("-a" , "--input_agp" , dest="input_agp",
 					help="AGP file of query sequences composition" , metavar="query.agp" )
 	parser.add_argument("--input_groups" , dest="input_groups",
-					help="Tab separated values file of group association of input sequences. Two columns reporting the sequences ID and the association groups id. Sequence can be associated to multiple groups with multiple rows. If not provided, [-e|--exclusion] and [-k|--known] will be used for grouping. To force the usage of alignment hits pass as value \"0\" (zero)"  , metavar="input_groups.tsv")
+					help="Tab separated values file of group association of input sequences. Two columns reporting the sequences ID and the association groups id. Sequence can be associated to multiple groups with multiple rows. [Required with --haplodup]"  , metavar="input_groups.tsv")
 	parser.add_argument("--legacy_groups" , dest="legacy_groups",
-					help="Tab separated values file of group association of components present the input sequences. Two columns reporting the component ID and the association group it belongs to. Sequence can be associated to multiple groups with multiple rows.", metavar="legacy_groups.tsv")
+					help="Tab separated values file of group association of components present the input sequences. Two columns reporting the component ID and the association group it belongs to. Sequence can be associated to multiple groups with multiple rows. [Required with --haplodup and -a|--input_agp]", metavar="legacy_groups.tsv")
 
 	#### Markers
 	parser.add_argument("-m", "--markers", dest="marker_map",
@@ -163,6 +163,16 @@ def main() :
 		print >> sys.stderr , "[ERROR] Query genome FASTA file missing"
 		parser.print_help()
 		sys.exit(1)
+
+	if options.haplodup :
+		if not options.input_groups :
+			print >> sys.stderr , "[ERROR] --haplodup set but --input_groups was not provided"
+			parser.print_help()
+			sys.exit(1)
+		if options.input_agp and (not options.legacy_groups) :
+			print >> sys.stderr , "[ERROR] --haplodup and -a|--input_agp set but --input_groups was not provided"
+			parser.print_help()
+			sys.exit(1)
 
 	###### Main ######
 
