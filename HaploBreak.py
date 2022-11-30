@@ -477,18 +477,20 @@ def main() :
 		bed_regions = read_bed_sorted_list( options.bed )
 		print >> sys.stdout , '[' + str(datetime.datetime.now()) + '] = Translating coordinates of features in bed the file'
 		print >> sys.stderr , '# Translating coordinates of features in bed the file'
-		new_bed = translate_bed_sorted_list( bed_regions ,  new_agp_db )
-		out_bed_file_name = options.out + ".new.bed"
-		out_bed_file = open(out_bed_file_name , 'w')
-		for line in sorted(new_bed) :
-			print >> out_bed_file, "\t".join([str(x) for x in line])
-		out_bed_file.close()
-		new_legacy_bed = translate_bed_sorted_list( bed_regions ,  new_legacy_agp_db )
-		out_bed_file_name = options.out + ".new_legacy.bed"
-		out_bed_file = open(out_bed_file_name , 'w')
-		for line in sorted(new_legacy_bed) :
-			print >> out_bed_file, "\t".join([str(x) for x in line])
-		out_bed_file.close()
+		if options.agp:
+			new_legacy_bed = translate_bed_sorted_list( bed_regions ,  new_legacy_agp_db )
+			out_bed_file_name = options.out + ".new_legacy.bed"
+			out_bed_file = open(out_bed_file_name , 'w')
+			for line in sorted(new_legacy_bed) :
+				print >> out_bed_file, "\t".join([str(x) for x in line])
+			out_bed_file.close()
+		else:
+			new_bed = translate_bed_sorted_list( bed_regions ,  new_agp_db )
+			out_bed_file_name = options.out + ".new.bed"
+			out_bed_file = open(out_bed_file_name , 'w')
+			for line in sorted(new_bed) :
+				print >> out_bed_file, "\t".join([str(x) for x in line])
+			out_bed_file.close()
 
 	##### Finished
 
