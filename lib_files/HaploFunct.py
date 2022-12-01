@@ -1918,32 +1918,35 @@ def translate_bed_sorted_list(bed_sorted_db , agp_db) :
 			other_cols = []
 
 		# Find the outgoing region
-		offset_dict = translation_db[chrom]
-		for element in sorted(offset_dict.keys()) :
-			if int(chromStart) >= int(element[0]) and int(chromEnd) <= int(element[1]) :
-				#print >> sys.stderr, element
-				new_chr , offset , direction = offset_dict[element]
-				if direction == "+" :
-					new_start = min( ( int(chromStart) + offset ) , ( int(chromEnd) + offset ) )
-					new_end = max( ( int(chromStart) + offset ) , ( int(chromEnd) + offset ) )
-					if not strand == "" :
-						new_strand = strand
-						translated_bed.append( [ new_chr , new_start , new_end ] + col3_4 + [ strand ] + other_cols )
-					else :
-						translated_bed.append( [ new_chr , new_start , new_end ] + other_cols )
-				elif direction == "-" :
-					new_start = min( (-int(chromStart) + offset) , (-int(chromEnd) + offset ) )
-					new_end = max( (-int(chromStart) + offset) , (-int(chromEnd) + offset ) )
-					if strand == "-" :
-						new_strand = "+"
-						translated_bed.append( [ new_chr , new_start , new_end ] + col3_4 + [ strand ] + other_cols )
-					if strand == "+"  :
-						new_strand = "-"
-						translated_bed.append( [ new_chr , new_start , new_end ] + col3_4 + [ strand ] + other_cols )
-					else :
-						# no strand
-						#print >> sys.stderr,  [ new_chr , new_start , new_end ] + other_cols
-						translated_bed.append( [ new_chr , new_start , new_end ] + other_cols )
+		try :
+			offset_dict = translation_db[chrom]
+			for element in sorted(offset_dict.keys()) :
+				if int(chromStart) >= int(element[0]) and int(chromEnd) <= int(element[1]) :
+					#print >> sys.stderr, element
+					new_chr , offset , direction = offset_dict[element]
+					if direction == "+" :
+						new_start = min( ( int(chromStart) + offset ) , ( int(chromEnd) + offset ) )
+						new_end = max( ( int(chromStart) + offset ) , ( int(chromEnd) + offset ) )
+						if not strand == "" :
+							new_strand = strand
+							translated_bed.append( [ new_chr , new_start , new_end ] + col3_4 + [ strand ] + other_cols )
+						else :
+							translated_bed.append( [ new_chr , new_start , new_end ] + other_cols )
+					elif direction == "-" :
+						new_start = min( (-int(chromStart) + offset) , (-int(chromEnd) + offset ) )
+						new_end = max( (-int(chromStart) + offset) , (-int(chromEnd) + offset ) )
+						if strand == "-" :
+							new_strand = "+"
+							translated_bed.append( [ new_chr , new_start , new_end ] + col3_4 + [ strand ] + other_cols )
+						if strand == "+"  :
+							new_strand = "-"
+							translated_bed.append( [ new_chr , new_start , new_end ] + col3_4 + [ strand ] + other_cols )
+						else :
+							# no strand
+							#print >> sys.stderr,  [ new_chr , new_start , new_end ] + other_cols
+							translated_bed.append( [ new_chr , new_start , new_end ] + other_cols )
+		except:
+			continue
 
 	return translated_bed
 

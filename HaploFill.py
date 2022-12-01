@@ -1318,6 +1318,8 @@ def main() :
 			else :
 				use_filler = "NONE"
 
+			# TODO: Add minimum matching percentage filter here
+
 			if use_filler == "T2" :
 				gap_db[gap_id]["best_match"] = unplaced_on_gap_mappings["target_2"]["map_info"][T2_id]["best_match"][0:-2]
 				gap_db[gap_id]["best_match_strand"] = unplaced_on_gap_mappings["target_2"]["map_info"][T2_id]["best_match"][-1]
@@ -1340,6 +1342,7 @@ def main() :
 				gap_db[gap_id]["longest_all_path_matches"]  = unplaced_on_gap_mappings["target_1"]["map_info"][T1_id]["longest_all_path_matches"]
 			else :
 				# Assess diploid of alternative region
+				# TODO: Disable adding the homozygous filler
 				gap_info = json.load( gzip.open( gap_db[gap_id]["file"] , "r") )
 				corr_region_content = gap_info["sequences_characteristics"]["gap_corr_region_content"]
 				if corr_region_content in ( "OK" , "DIP" ) :
