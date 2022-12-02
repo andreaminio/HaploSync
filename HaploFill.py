@@ -65,6 +65,10 @@ def main() :
 					help="If set, force to overwrite content in the temporary folder")
 	parser.add_argument( "--flanking" , dest="flanking" , default=150000 ,
 					help="Size of the flanking region around gaps [default: 150000]", metavar="N")
+	parser.add_argument( "--coverage" , dest="coverage" , default=20 ,
+					help="Minimum coverage percentage of the filler to match the supporting sequence(s) [default: 20]", metavar="0-100")
+	parser.add_argument( "--nohomozygous" , dest="no_homozygous" , default=False, action="store_true",
+					help="Do not search and output homozygous fillers")
 
 	print >> sys.stdout, "Running HaploFill tool from HaploSync version " + get_version()
 	print >> sys.stdout, "To reproduce this run use the following command: " + " ".join( pipes.quote(x) for x in sys.argv)
@@ -1230,7 +1234,7 @@ def main() :
 				T1_longest_all_path_matches  = unplaced_on_gap_mappings["target_1"]["map_info"][T1_id]["longest_all_path_matches"]
 			else :
 				T1_best_match = ""
-				T1_best_match_sequence_len = ""
+				T1_best_match_sequence_len = 0
 				T1_best_match_strand = ""
 				T1_longest_pass_path = ""
 				T1_longest_all_path = ""
@@ -1247,7 +1251,7 @@ def main() :
 				T2_longest_all_path_matches  = unplaced_on_gap_mappings["target_2"]["map_info"][T2_id]["longest_all_path_matches"]
 			else:
 				T2_best_match = ""
-				T2_best_match_sequence_len = ""
+				T2_best_match_sequence_len = 0
 				T2_best_match_strand = ""
 				T2_longest_pass_path = ""
 				T2_longest_all_path = ""
@@ -1287,6 +1291,9 @@ def main() :
 			longest_pass_path_matches_delta = int(T2_longest_pass_path_matches) - int(T1_longest_pass_path_matches)
 			longest_all_path_matches_delta  = int(T2_longest_all_path_matches) - int(T1_longest_all_path_matches)
 			use_filler = "NONE"
+			T1_coverage = 100 * ( float(T1_longest_pass_path_matches) / float(T1_best_match_sequence_len) )
+			T2_coverage = 100 * ( float(T2_longest_pass_path_matches) / float(T2_best_match_sequence_len) )
+
 			if T1_id == T2_id :
 				use_filler = "T1"
 			elif ( T1_strategy in [
@@ -1318,7 +1325,13 @@ def main() :
 			else :
 				use_filler = "NONE"
 
-			# TODO: Add minimum matching percentage filter here
+			# Minimum matching coverage percentage filter
+
+			if not use_filler == "T1" and T1_coverage < float(options.coverage) :
+				use_filler = "NONE"
+
+			if not use_filler == "T2" and T2_coverage < float(options.coverage) :
+				use_filler = "NONE"
 
 			if use_filler == "T2" :
 				gap_db[gap_id]["best_match"] = unplaced_on_gap_mappings["target_2"]["map_info"][T2_id]["best_match"][0:-2]
@@ -1342,14 +1355,15 @@ def main() :
 				gap_db[gap_id]["longest_all_path_matches"]  = unplaced_on_gap_mappings["target_1"]["map_info"][T1_id]["longest_all_path_matches"]
 			else :
 				# Assess diploid of alternative region
-				# TODO: Disable adding the homozygous filler
-				gap_info = json.load( gzip.open( gap_db[gap_id]["file"] , "r") )
-				corr_region_content = gap_info["sequences_characteristics"]["gap_corr_region_content"]
-				if corr_region_content in ( "OK" , "DIP" ) :
-					# Alternative sequence has diploid coverage, set it as filler
-					gap_db[gap_id]["best_match"] = gap_info["mate_id"]
-					gap_db[gap_id]["best_match_region"] = gap_info["gap_corr_region"]
-					gap_db[gap_id]["best_match_strand"] = "+"
+				# Disable adding the homozygous filler with options.no_homozygous
+				if not options.no_homozygous :
+					gap_info = json.load( gzip.open( gap_db[gap_id]["file"] , "r") )
+					corr_region_content = gap_info["sequences_characteristics"]["gap_corr_region_content"]
+					if corr_region_content in ( "OK" , "DIP" ) :
+						# Alternative sequence has diploid coverage, set it as filler
+						gap_db[gap_id]["best_match"] = gap_info["mate_id"]
+						gap_db[gap_id]["best_match_region"] = gap_info["gap_corr_region"]
+						gap_db[gap_id]["best_match_strand"] = "+"
 
 		findings.close()
 		json.dump( gap_db , gzip.open( gap_db_file , 'w' ) , indent=4 , sort_keys=True)
