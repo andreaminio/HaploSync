@@ -1291,8 +1291,14 @@ def main() :
 			longest_pass_path_matches_delta = int(T2_longest_pass_path_matches) - int(T1_longest_pass_path_matches)
 			longest_all_path_matches_delta  = int(T2_longest_all_path_matches) - int(T1_longest_all_path_matches)
 			use_filler = "NONE"
-			T1_coverage = 100 * ( float(T1_longest_pass_path_matches) / float(T1_best_match_sequence_len) )
-			T2_coverage = 100 * ( float(T2_longest_pass_path_matches) / float(T2_best_match_sequence_len) )
+			if float(T1_best_match_sequence_len) > 0 :
+				T1_coverage = 100 * ( float(T1_longest_pass_path_matches) / float(T1_best_match_sequence_len) )
+			else :
+				T1_coverage = 0
+			if float(T2_best_match_sequence_len) > 0 :
+				T2_coverage = 100 * ( float(T2_longest_pass_path_matches) / float(T2_best_match_sequence_len) )
+			else :
+				T2_coverage = 0
 
 			if T1_id == T2_id :
 				use_filler = "T1"
