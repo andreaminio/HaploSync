@@ -1209,6 +1209,8 @@ def main() :
 		findings_file = options.output + ".gap_filling_findings.txt"
 		findings = open(findings_file , 'w+')
 		for gap_id in sorted( gap_db.keys() ) :
+			print >> sys.stderr, '### Processing Gap:' + str(gap_id)
+
 			T1_sequence_id = gap_db[gap_id]["sequence_id"]
 			T1_coordinates = gap_db[gap_id]["coordinates"]
 			T1_upstream = gap_db[gap_id]["flanking_upstream_region"]
@@ -1339,6 +1341,8 @@ def main() :
 			if not use_filler == "T2" and T2_coverage < float(options.coverage) :
 				use_filler = "NONE"
 
+			print >> sys.stderr, '#### Selected supporting sequence: ' + use_filler
+
 			if use_filler == "T2" :
 				gap_db[gap_id]["best_match"] = unplaced_on_gap_mappings["target_2"]["map_info"][T2_id]["best_match"][0:-2]
 				gap_db[gap_id]["best_match_strand"] = unplaced_on_gap_mappings["target_2"]["map_info"][T2_id]["best_match"][-1]
@@ -1360,16 +1364,23 @@ def main() :
 				#gap_db[gap_id]["longest_all_graph"] = unplaced_on_gap_mappings["target_1"]["map_info"][T1_id]["longest_all_graph"]
 				gap_db[gap_id]["longest_all_path_matches"]  = unplaced_on_gap_mappings["target_1"]["map_info"][T1_id]["longest_all_path_matches"]
 			else :
+				print >> sys.stderr, '#### Checking alternative haplotype for diploid homozygous state: '
 				# Assess diploid of alternative region
 				# Disable adding the homozygous filler with options.no_homozygous
 				if not options.no_homozygous :
+					print >> sys.stderr, '##### Option Enabled'
 					gap_info = json.load( gzip.open( gap_db[gap_id]["file"] , "r") )
 					corr_region_content = gap_info["sequences_characteristics"]["gap_corr_region_content"]
 					if corr_region_content in ( "OK" , "DIP" ) :
+						print >> sys.stderr, '##### Homozygous region, filling with ' + str(gap_info["gap_corr_region"])
 						# Alternative sequence has diploid coverage, set it as filler
 						gap_db[gap_id]["best_match"] = gap_info["mate_id"]
 						gap_db[gap_id]["best_match_region"] = gap_info["gap_corr_region"]
 						gap_db[gap_id]["best_match_strand"] = "+"
+					else :
+						print >> sys.stderr, '##### Alternative haplotype not diploid, homozygous, or reliable. No filling will be used.'
+				else :
+					print >> sys.stderr, '##### Option disabled'
 
 		findings.close()
 		json.dump( gap_db , gzip.open( gap_db_file , 'w' ) , indent=4 , sort_keys=True)
