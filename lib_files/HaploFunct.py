@@ -1413,7 +1413,12 @@ def mask_regions( signal_list , bed_db , code ):
 		for start in sorted(bed_db[chr].keys()) :
 			for stop in sorted(bed_db[chr][start].keys()) :
 				for pos in range(start , stop , 1) :
-					edited_signal[pos] = code
+					try:
+						edited_signal[pos] = code
+
+					except :
+						print >> sys.stderr, "[DEBUG] Repeat - " + chr + " - Chr length: " + str(len(edited_signal)) + " - Region: " + str(start) + " " + str(stop)
+						sys.exit(1)
 
 	return edited_signal
 
