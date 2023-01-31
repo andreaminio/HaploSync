@@ -2,7 +2,7 @@
 
 ## Workflow diagram
 
-![diagram](diagram.png)
+![diagram](Diagram.png)
 
 ## Workflow steps
 
