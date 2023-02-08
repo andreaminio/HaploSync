@@ -5693,34 +5693,15 @@ def rejected_QC(out_dir, query_name , query_fasta_db, chr_id, fasta_db_1, fasta_
 	hap2_id = chr_to_fasta_2[chr_id]
 	query_id = query_name[:-2]
 	query_orientation = query_name[-1]
-	query_seq_from_db = query_fasta_db[query_id]
-	query_len = len(query_fasta_db[query_id])
-	# Generate files for plots
-	structure_file = query_id + ".structure.tsv"
-	structure_file_fullpath = out_dir + "/" + structure_file
-	agp_table = []
-	for seq_id in agp_db :
-		seq_agp = agp_db[seq_id]
-		for start in sorted(seq_agp.keys()) :
-			Obj_Name , Obj_start , Obj_End , PartNum , Compnt_Type , CompntId , CompntStart , CompntEnd ,  Orientation = seq_agp[start]
-			if Compnt_Type == "W" :
-				if CompntId in groups_by_sequence :
-					groups = groups_by_sequence[CompntId]
-					if len(groups) == 1 :
-						group = groups[0]
-					else :
-						group = "multiple_groups"
-				else :
-					group = "none"
-				agp_table.append([Obj_Name , Obj_start , Obj_End , CompntId , Orientation , group ])
-	structure_file_fullpath = write_table(agp_table, structure_file_fullpath)
-
-	if not legacy_agp == "" :
-		legacy_structure_file = query_id + ".legacy_structure.tsv"
-		legacy_structure_file_fullpath = out_dir + "/" + legacy_structure_file
-		legacy_agp_table = []
-		for seq_id in legacy_agp :
-			seq_agp = legacy_agp[seq_id]
+	if query_id in query_fasta_db :
+		query_seq_from_db = query_fasta_db[query_id]
+		query_len = len(query_fasta_db[query_id])
+		# Generate files for plots
+		structure_file = query_id + ".structure.tsv"
+		structure_file_fullpath = out_dir + "/" + structure_file
+		agp_table = []
+		for seq_id in agp_db :
+			seq_agp = agp_db[seq_id]
 			for start in sorted(seq_agp.keys()) :
 				Obj_Name , Obj_start , Obj_End , PartNum , Compnt_Type , CompntId , CompntStart , CompntEnd ,  Orientation = seq_agp[start]
 				if Compnt_Type == "W" :
@@ -5733,10 +5714,14 @@ def rejected_QC(out_dir, query_name , query_fasta_db, chr_id, fasta_db_1, fasta_
 					else :
 						group = "none"
 					agp_table.append([Obj_Name , Obj_start , Obj_End , CompntId , Orientation , group ])
-					legacy_agp_table.append([Obj_Name , Obj_start , Obj_End , CompntId , Orientation , group ])
-		if not input_agp == "" :
-			for seq_id in input_agp :
-				seq_agp = input_agp[seq_id]
+		structure_file_fullpath = write_table(agp_table, structure_file_fullpath)
+
+		if not legacy_agp == "" :
+			legacy_structure_file = query_id + ".legacy_structure.tsv"
+			legacy_structure_file_fullpath = out_dir + "/" + legacy_structure_file
+			legacy_agp_table = []
+			for seq_id in legacy_agp :
+				seq_agp = legacy_agp[seq_id]
 				for start in sorted(seq_agp.keys()) :
 					Obj_Name , Obj_start , Obj_End , PartNum , Compnt_Type , CompntId , CompntStart , CompntEnd ,  Orientation = seq_agp[start]
 					if Compnt_Type == "W" :
@@ -5750,304 +5735,324 @@ def rejected_QC(out_dir, query_name , query_fasta_db, chr_id, fasta_db_1, fasta_
 							group = "none"
 						agp_table.append([Obj_Name , Obj_start , Obj_End , CompntId , Orientation , group ])
 						legacy_agp_table.append([Obj_Name , Obj_start , Obj_End , CompntId , Orientation , group ])
-		legacy_structure_file_fullpath = write_table(legacy_agp_table, legacy_structure_file_fullpath)
-	else :
-		legacy_structure_file = "0"
-		# No legacy  structure to load
+			if not input_agp == "" :
+				for seq_id in input_agp :
+					seq_agp = input_agp[seq_id]
+					for start in sorted(seq_agp.keys()) :
+						Obj_Name , Obj_start , Obj_End , PartNum , Compnt_Type , CompntId , CompntStart , CompntEnd ,  Orientation = seq_agp[start]
+						if Compnt_Type == "W" :
+							if CompntId in groups_by_sequence :
+								groups = groups_by_sequence[CompntId]
+								if len(groups) == 1 :
+									group = groups[0]
+								else :
+									group = "multiple_groups"
+							else :
+								group = "none"
+							agp_table.append([Obj_Name , Obj_start , Obj_End , CompntId , Orientation , group ])
+							legacy_agp_table.append([Obj_Name , Obj_start , Obj_End , CompntId , Orientation , group ])
+			legacy_structure_file_fullpath = write_table(legacy_agp_table, legacy_structure_file_fullpath)
+		else :
+			legacy_structure_file = "0"
+			# No legacy  structure to load
 
-	if not associated_legacy_ids_file == "" :
-		associated_legacy_ids = read_table(associated_legacy_ids_file)
-		# associated_legacy_ids = [ ... , [ "hap1_legacy" , Tid , Tstart , Tstop , "Query_legacy" , Qid , Qstart , Qstop , group_id ] , ... ]
-		# Coordinates are on pseudomolecules for hap1 and hap2 regions, on HS for "Query_legacy"
-		associated_seqid_file = query_id + ".legacy_associations.tsv"
-		associated_seqid_file_fullpath = out_dir + "/" + associated_seqid_file
-		associated_seqid_file_connection = open( associated_seqid_file_fullpath , 'w')
-		# make table file for plotting polygons
-		category = polygons_from_ranges(associated_seqid_file_connection ,associated_legacy_ids , 1 , 0 , "hap1_to_hap2" , hap1_id , hap2_id)
-		category = polygons_from_ranges(associated_seqid_file_connection ,associated_legacy_ids , 1 , 0 , "hap1_to_unplaced" , hap1_id , query_name)
-		category = polygons_from_ranges(associated_seqid_file_connection ,associated_legacy_ids , 0 , 1 , "hap2_to_unplaced" , hap2_id , query_name)
-		associated_seqid_file_connection.close()
-	else :
-		if not associated_input_seqid_file == "" :
-			associated_seqid = read_table(associated_input_seqid_file)
-			# associated_seqid = [ ... , [ "hap1_HS" , Tid , Tstart , Tstop , "Query_HS" , Qid , Qstart , Qstop , group_id ] , ... ]
-			# Coordinates are on pseudomolecules for hap1 and hap2 regions, on HS for "Query_legacy
-			associated_seqid_file = query_id + ".associations.tsv"
+		if not associated_legacy_ids_file == "" :
+			associated_legacy_ids = read_table(associated_legacy_ids_file)
+			# associated_legacy_ids = [ ... , [ "hap1_legacy" , Tid , Tstart , Tstop , "Query_legacy" , Qid , Qstart , Qstop , group_id ] , ... ]
+			# Coordinates are on pseudomolecules for hap1 and hap2 regions, on HS for "Query_legacy"
+			associated_seqid_file = query_id + ".legacy_associations.tsv"
 			associated_seqid_file_fullpath = out_dir + "/" + associated_seqid_file
 			associated_seqid_file_connection = open( associated_seqid_file_fullpath , 'w')
 			# make table file for plotting polygons
-			category = polygons_from_ranges(associated_seqid_file_connection ,associated_seqid , 1 , 0 , "hap1_to_hap2" , hap1_id , hap2_id)
-			category = polygons_from_ranges(associated_seqid_file_connection ,associated_seqid , 1 , 0 , "hap1_to_unplaced" , hap1_id , query_name)
-			category = polygons_from_ranges(associated_seqid_file_connection ,associated_seqid , 0 , 1 , "hap2_to_unplaced" , hap2_id , query_name)
+			category = polygons_from_ranges(associated_seqid_file_connection ,associated_legacy_ids , 1 , 0 , "hap1_to_hap2" , hap1_id , hap2_id)
+			category = polygons_from_ranges(associated_seqid_file_connection ,associated_legacy_ids , 1 , 0 , "hap1_to_unplaced" , hap1_id , query_name)
+			category = polygons_from_ranges(associated_seqid_file_connection ,associated_legacy_ids , 0 , 1 , "hap2_to_unplaced" , hap2_id , query_name)
 			associated_seqid_file_connection.close()
 		else :
-			# No association info based on sequences to use in the plot
-			# Map unplaced and analyse all mappings (also hap1 to hap2) to define collinear regions
-			hit_target_ranges = []
-			associated_seqid_file = query_id + ".hits.tsv"
-			# map
-			seq_len_db = {}
-			hap1_seq = { hap1_id : fasta_db_1[hap1_id] }
-			seq_len_db[hap1_id] = len(hap1_seq[hap1_id])
-			hap2_seq = {hap2_id : fasta_db_2[hap2_id] }
-			seq_len_db[hap2_id] = len(hap2_seq[hap2_id])
-			unplaced_seq = {}
-			if query_name[-1] == "+" :
-				unplaced_seq[query_name] = query_seq_from_db
+			if not associated_input_seqid_file == "" :
+				associated_seqid = read_table(associated_input_seqid_file)
+				# associated_seqid = [ ... , [ "hap1_HS" , Tid , Tstart , Tstop , "Query_HS" , Qid , Qstart , Qstop , group_id ] , ... ]
+				# Coordinates are on pseudomolecules for hap1 and hap2 regions, on HS for "Query_legacy
+				associated_seqid_file = query_id + ".associations.tsv"
+				associated_seqid_file_fullpath = out_dir + "/" + associated_seqid_file
+				associated_seqid_file_connection = open( associated_seqid_file_fullpath , 'w')
+				# make table file for plotting polygons
+				category = polygons_from_ranges(associated_seqid_file_connection ,associated_seqid , 1 , 0 , "hap1_to_hap2" , hap1_id , hap2_id)
+				category = polygons_from_ranges(associated_seqid_file_connection ,associated_seqid , 1 , 0 , "hap1_to_unplaced" , hap1_id , query_name)
+				category = polygons_from_ranges(associated_seqid_file_connection ,associated_seqid , 0 , 1 , "hap2_to_unplaced" , hap2_id , query_name)
+				associated_seqid_file_connection.close()
 			else :
-				unplaced_seq[query_name] = str(Seq(query_seq_from_db).reverse_complement()).upper()
-			seq_len_db[query_name] = len(query_seq_from_db)
-
-			hap1_fasta = out_dir + "/" + hap1_id + ".fasta"
-			write_fasta_from_db( hap1_seq , hap1_fasta )
-			hap2_fasta = out_dir + "/" + hap2_id + ".fasta"
-			write_fasta_from_db( hap2_seq , hap2_fasta )
-			query_fasta = out_dir + "/" + query_id + ".fasta"
-			write_fasta_from_db( unplaced_seq , query_fasta )
-
-			unplaced_on_hap1_prefix = query_id + ".on.hap1"
-			unplaced_on_hap1_prefix_fullpath =  out_dir + "/" + query_id + ".on.hap1"
-			unplaced_on_hap1_coords = unplaced_on_hap1_prefix_fullpath + ".coords"
-			unplaced_on_hap1_coords = map_nucmer( hap1_fasta , query_fasta , int(cores) , unplaced_on_hap1_coords , paths["nucmer"] , paths["show-coords"] , " --forward " , " -l -r -T -H ")
-			unplaced_on_hap1_hits = read_nucmer_coords(unplaced_on_hap1_coords)
-			unplaced_on_hap1_best_alignment = hits_best_tiling_path(unplaced_on_hap1_hits, seq_len_db)
-			# unplaced_on_target_best_alignment = [ ... , [ Tid , int(Tstart) , int(Tstop) , Qid, int(Qstart) , int(Qstop) , int(align_length) ,  int(match_length) ] , ... ]
-			# Convert to cords table format
-			for hit in unplaced_on_hap1_best_alignment :
-				Tid , Tstart , Tstop , Qid , Qstart , Qstop , align_length ,  match_length = hit
-				# hit format: ["hap1_legacy" , Tid , Tstart , Tstop , "Query_legacy" , Qid , Qstart , Qstop]
-				hit_target_ranges.append( [ "hap1" , Tid , str(min(int(Tstart) , int(Tstop))) , str(max(int(Tstart) , int(Tstop))) , "Unplace" , Qid , str(min(int(Qstart) , int(Qstop))) , str(max(int(Qstart) , int(Qstop))) , "map" ] )
-
-			unplaced_on_hap2_prefix = query_id + ".on.hap2"
-			unplaced_on_hap2_prefix_fullpath =  out_dir + "/" + query_id + ".on.hap2"
-			unplaced_on_hap2_coords = unplaced_on_hap2_prefix_fullpath + ".coords"
-			unplaced_on_hap2_coords = map_nucmer( hap2_fasta , query_fasta , int(cores) , unplaced_on_hap2_coords , paths["nucmer"] , paths["show-coords"] , " --forward " , " -l -r -T -H ")
-			unplaced_on_hap2_hits = read_nucmer_coords(unplaced_on_hap2_coords)
-			unplaced_on_hap2_best_alignment = hits_best_tiling_path(unplaced_on_hap2_hits, seq_len_db)
-			# unplaced_on_target_best_alignment = [ ... , [ Tid , int(Tstart) , int(Tstop) , Qid, int(Qstart) , int(Qstop) , int(align_length) ,  int(match_length) ] , ... ]
-			# Convert to cords table format
-			for hit in unplaced_on_hap2_best_alignment :
-				Tid , Tstart , Tstop , Qid , Qstart , Qstop , align_length ,  match_length = hit
-				# hit format: ["hap2_legacy" , Tid , Tstart , Tstop , "Query_legacy" , Qid , Qstart , Qstop]
-				hit_target_ranges.append( [ "hap2" , Tid , str(min(int(Tstart) , int(Tstop))) , str(max(int(Tstart) , int(Tstop))) , "Unplace" , Qid , str(min(int(Qstart) , int(Qstop))) , str(max(int(Qstart) , int(Qstop))) , "map"] )
-
-			hit_target_ranges_file = out_dir + "/" + query_id + ".mappign_hits.txt"
-			# Read Hap1 to Hap2 hits
-			target_coords = read_table(hap2_on_hap1_coords_file)
-			# target_coords_file =[ ... , [ tID , tLen , tStart , tStop , qID , qLen , qStart , qStop , identity , match ] , ... ]
-			# filter hits and convert to ranges
-			for hit in target_coords :
-				tID , tLen , tStart , tStop , qID , qLen , qStart , qStop , identity , match = hit
-				if tID == hap1_id and qID == hap2_id :
-					hit_target_ranges.append( [ "hap1" , tID , str(min(int(tStart) , int(tStop))) , str(max(int(tStart) , int(tStop))) , "hap2" , qID , str(min(int(qStart) , int(qStop))) , str(max(int(qStart) , int(qStop))) , "map" ] )
-
-			hit_target_ranges_file = write_table( hit_target_ranges , hit_target_ranges_file )
-
-			# generate associations and make table file for plotting polygons
-			associated_seqid_file_fullpath = out_dir + "/" + associated_seqid_file
-			associated_seqid_file_connection = open( associated_seqid_file_fullpath , 'w')
-			category = polygons_from_ranges(associated_seqid_file_connection ,hit_target_ranges , 1 , 0 , "hap1_to_hap2" , hap1_id , hap2_id)
-			category = polygons_from_ranges(associated_seqid_file_connection ,hit_target_ranges , 1 , 0 , "hap1_to_unplaced" , hap1_id , query_name)
-			category = polygons_from_ranges(associated_seqid_file_connection ,hit_target_ranges , 0 , 1 , "hap2_to_unplaced" , hap2_id , query_name)
-			associated_seqid_file_connection.close()
-
-	if not marker_bed == "" :
-		# marker_bed == markers_db >> merged seq_id keys for pseudomolecules and input sequences
-		# 	markers_db[seq_id][marker_id] = [ ... , [seq_id , start , stop , marker_id] , ... ]
-		# marker_usage_db == clean_marker_set_by_seq
-		# 	clean_marker_set_by_seq[seq_id] = {
-		#		clean_marker_set_by_seq[seq_id]["id"] : seq_id
-		# 		clean_marker_set_by_seq[seq_id]["chr"] : chr_id
-		# 		clean_marker_set_by_seq[seq_id]["markers"] : [ ... , [chr_id , chr_pos , marker_id , seq_id, start , stop] , ... ]
-		# 		clean_marker_set_by_seq[seq_id]["range"] : [marker_pos_min , marker_pos_max] ,
-		# 		clean_marker_set_by_seq[seq_id]["orientation"] : ["+" or "-" or "."] }
-		# marker_map == marker_map_by_seq
-		#	marker_map[chr_id] = [ ... , [ int(pos) , marker_id ] , ... ]
-		marker_scale = {}
-		for marker in marker_map[chr_id] :
-			pos, marker_id = marker
-			marker_scale[marker_id] = pos
-
-		marker_all_sequence_table_file = query_id + ".marker_all_sequence.tsv"
-		marker_all_sequence_table_file_fullpath = out_dir + "/" + marker_all_sequence_table_file
-		associated_markers_file = query_id + ".marker_associations.tsv"
-		associated_markers_file_fullpath = out_dir + "/" + associated_markers_file
-		# marker_all_sequence_table contains
-		# 	a) all markers positions according to hap1 ,hap2 and unplaced query coordinates
-		#	b) info on being used or not
-		#  format associated_markers sets for segment plot >> [ x = t_start, y = t_height, xend = Q_start, yend = q_height, position(for color) , marker_id , category]
-		marker_all_sequence_table = []
-		associated_markers = []
-		used_markers_by_seq = {}
-		markers_ranges = {}
-
-		#print >> sys.stderr , "marker_usage_db keys: " + str(marker_usage_db.keys())
-
-		for component in agp_table :
-			#print >> sys.stderr , component
-			Obj_Name , Obj_start , Obj_End , CompntId , Orientation, group = component
-			#print >> sys.stderr , Obj_Name
-			if Obj_Name not in [ hap1_id , hap2_id , query_id ] :
-				#print >> sys.stderr , ">>> " + Obj_Name + " not listed"
-				continue
-			else :
-				#print >> sys.stderr , Obj_Name + " listed:"
-				if Obj_Name == query_id :
-					if Obj_Name in marker_usage_db :
-						# Do not search for markers in legacy contig, info not available, only pseudomoelcules and input sequences
-						if Obj_Name not in used_markers_by_seq :
-							used_markers_by_seq[Obj_Name] = []
-							markers_ranges[Obj_Name] = []
-
-						if not marker_usage_db[Obj_Name]["orientation"] == "." :
-							used_markers_by_seq[Obj_Name] += [str(x[2]) for x in marker_usage_db[Obj_Name]["markers"] ]
-							#print >> sys.stderr , "---- Obj_Name: " + Obj_Name + " has direction"
-						else :
-							unordered_marker_list = [str(x[2]) for x in marker_usage_db[Obj_Name]["markers"]["+"] ]
-							unordered_marker_list += [str(x[2]) for x in marker_usage_db[Obj_Name]["markers"]["-"] ]
-							used_markers_by_seq[Obj_Name] += list(set(unordered_marker_list))
-							#print >> sys.stderr , "---- Obj_Name: " + Obj_Name + " does not have a direction"
-						markers_ranges[Obj_Name].append( [ Obj_Name , marker_usage_db[Obj_Name]["range"][0] , marker_usage_db[Obj_Name]["range"][1] , marker_usage_db[Obj_Name]["orientation"] , marker_usage_db[Obj_Name]["id"] , Obj_Name ] )
-					#else :
-					#	print >> sys.stderr , "---- CompntId: " + Obj_Name + " not in marker_usage_db"
+				# No association info based on sequences to use in the plot
+				# Map unplaced and analyse all mappings (also hap1 to hap2) to define collinear regions
+				hit_target_ranges = []
+				associated_seqid_file = query_id + ".hits.tsv"
+				# map
+				seq_len_db = {}
+				hap1_seq = { hap1_id : fasta_db_1[hap1_id] }
+				seq_len_db[hap1_id] = len(hap1_seq[hap1_id])
+				hap2_seq = {hap2_id : fasta_db_2[hap2_id] }
+				seq_len_db[hap2_id] = len(hap2_seq[hap2_id])
+				unplaced_seq = {}
+				if query_name[-1] == "+" :
+					unplaced_seq[query_name] = query_seq_from_db
 				else :
-					if CompntId in marker_usage_db :
-						# Do not search for markers in legacy contig, info not available, only pseudomoelcules and input sequences
-						if Obj_Name not in used_markers_by_seq :
-							used_markers_by_seq[Obj_Name] = []
-							markers_ranges[Obj_Name] = []
+					unplaced_seq[query_name] = str(Seq(query_seq_from_db).reverse_complement()).upper()
+				seq_len_db[query_name] = len(query_seq_from_db)
 
-						if not marker_usage_db[CompntId]["orientation"] == "." :
-							used_markers_by_seq[Obj_Name] += [str(x[2]) for x in marker_usage_db[CompntId]["markers"] ]
-							#print >> sys.stderr , "---- CompntId: " + CompntId + " has direction"
-						else :
-							unordered_marker_list = [str(x[2]) for x in marker_usage_db[CompntId]["markers"]["+"] ]
-							unordered_marker_list += [str(x[2]) for x in marker_usage_db[CompntId]["markers"]["-"] ]
-							used_markers_by_seq[Obj_Name] += list(set(unordered_marker_list))
-							#print >> sys.stderr , "---- CompntId: " + CompntId + " does not have a direction"
-						markers_ranges[Obj_Name].append( [ Obj_Name , marker_usage_db[CompntId]["range"][0] , marker_usage_db[CompntId]["range"][1] , marker_usage_db[CompntId]["orientation"] , marker_usage_db[CompntId]["id"] , Obj_Name ] )
-					#else :
-					#	print >> sys.stderr , "---- CompntId: " + CompntId + " not in marker_usage_db"
+				hap1_fasta = out_dir + "/" + hap1_id + ".fasta"
+				write_fasta_from_db( hap1_seq , hap1_fasta )
+				hap2_fasta = out_dir + "/" + hap2_id + ".fasta"
+				write_fasta_from_db( hap2_seq , hap2_fasta )
+				query_fasta = out_dir + "/" + query_id + ".fasta"
+				write_fasta_from_db( unplaced_seq , query_fasta )
 
-		#print >> sys.stderr , "used_markers_by_seq keys: " + str(used_markers_by_seq.keys())
-		# generate table of marker ranges -> coordinates on marker map -> pick the used markers regions in clean_marker_set_by_seq
-		markers_ranges_file = query_id + ".used_markers_range.tsv"
-		markers_ranges_file_fullpath = out_dir + "/" + markers_ranges_file
-		markers_ranges_file_fullpath_connection = open( markers_ranges_file_fullpath , 'w')
-		for chr_id in markers_ranges.keys() :
-			for range in markers_ranges[chr_id] :
-				print >> markers_ranges_file_fullpath_connection , "\t".join([ str(x) for x in range])
-		markers_ranges_file_fullpath_connection.close()
+				unplaced_on_hap1_prefix = query_id + ".on.hap1"
+				unplaced_on_hap1_prefix_fullpath =  out_dir + "/" + query_id + ".on.hap1"
+				unplaced_on_hap1_coords = unplaced_on_hap1_prefix_fullpath + ".coords"
+				unplaced_on_hap1_coords = map_nucmer( hap1_fasta , query_fasta , int(cores) , unplaced_on_hap1_coords , paths["nucmer"] , paths["show-coords"] , " --forward " , " -l -r -T -H ")
+				unplaced_on_hap1_hits = read_nucmer_coords(unplaced_on_hap1_coords)
+				unplaced_on_hap1_best_alignment = hits_best_tiling_path(unplaced_on_hap1_hits, seq_len_db)
+				# unplaced_on_target_best_alignment = [ ... , [ Tid , int(Tstart) , int(Tstop) , Qid, int(Qstart) , int(Qstop) , int(align_length) ,  int(match_length) ] , ... ]
+				# Convert to cords table format
+				for hit in unplaced_on_hap1_best_alignment :
+					Tid , Tstart , Tstop , Qid , Qstart , Qstop , align_length ,  match_length = hit
+					# hit format: ["hap1_legacy" , Tid , Tstart , Tstop , "Query_legacy" , Qid , Qstart , Qstop]
+					hit_target_ranges.append( [ "hap1" , Tid , str(min(int(Tstart) , int(Tstop))) , str(max(int(Tstart) , int(Tstop))) , "Unplace" , Qid , str(min(int(Qstart) , int(Qstop))) , str(max(int(Qstart) , int(Qstop))) , "map" ] )
 
-		# Table format: seq_id , start ,stop , orientation , component_id , group
-		#  format associated_markers sets for segment plot >> [ x = t_start, y = t_height, xend = Q_start, yend = q_height, position(for color) , marker_id , category]
-		if hap1_id in marker_bed :
-			for marker_id in sorted(marker_bed[hap1_id].keys()) :
-				for hit in marker_bed[hap1_id][marker_id] :
-					chr_id , start , stop , marker_name = hit
-					# Add to marker_all_sequence_table
-					if marker_id in marker_scale :
-						marker_pos = marker_scale[marker_id]
-						if hap1_id in used_markers_by_seq :
-							if marker_id in used_markers_by_seq[hap1_id] :
-								usage = "TRUE"
+				unplaced_on_hap2_prefix = query_id + ".on.hap2"
+				unplaced_on_hap2_prefix_fullpath =  out_dir + "/" + query_id + ".on.hap2"
+				unplaced_on_hap2_coords = unplaced_on_hap2_prefix_fullpath + ".coords"
+				unplaced_on_hap2_coords = map_nucmer( hap2_fasta , query_fasta , int(cores) , unplaced_on_hap2_coords , paths["nucmer"] , paths["show-coords"] , " --forward " , " -l -r -T -H ")
+				unplaced_on_hap2_hits = read_nucmer_coords(unplaced_on_hap2_coords)
+				unplaced_on_hap2_best_alignment = hits_best_tiling_path(unplaced_on_hap2_hits, seq_len_db)
+				# unplaced_on_target_best_alignment = [ ... , [ Tid , int(Tstart) , int(Tstop) , Qid, int(Qstart) , int(Qstop) , int(align_length) ,  int(match_length) ] , ... ]
+				# Convert to cords table format
+				for hit in unplaced_on_hap2_best_alignment :
+					Tid , Tstart , Tstop , Qid , Qstart , Qstop , align_length ,  match_length = hit
+					# hit format: ["hap2_legacy" , Tid , Tstart , Tstop , "Query_legacy" , Qid , Qstart , Qstop]
+					hit_target_ranges.append( [ "hap2" , Tid , str(min(int(Tstart) , int(Tstop))) , str(max(int(Tstart) , int(Tstop))) , "Unplace" , Qid , str(min(int(Qstart) , int(Qstop))) , str(max(int(Qstart) , int(Qstop))) , "map"] )
+
+				hit_target_ranges_file = out_dir + "/" + query_id + ".mappign_hits.txt"
+				# Read Hap1 to Hap2 hits
+				target_coords = read_table(hap2_on_hap1_coords_file)
+				# target_coords_file =[ ... , [ tID , tLen , tStart , tStop , qID , qLen , qStart , qStop , identity , match ] , ... ]
+				# filter hits and convert to ranges
+				for hit in target_coords :
+					tID , tLen , tStart , tStop , qID , qLen , qStart , qStop , identity , match = hit
+					if tID == hap1_id and qID == hap2_id :
+						hit_target_ranges.append( [ "hap1" , tID , str(min(int(tStart) , int(tStop))) , str(max(int(tStart) , int(tStop))) , "hap2" , qID , str(min(int(qStart) , int(qStop))) , str(max(int(qStart) , int(qStop))) , "map" ] )
+
+				hit_target_ranges_file = write_table( hit_target_ranges , hit_target_ranges_file )
+
+				# generate associations and make table file for plotting polygons
+				associated_seqid_file_fullpath = out_dir + "/" + associated_seqid_file
+				associated_seqid_file_connection = open( associated_seqid_file_fullpath , 'w')
+				category = polygons_from_ranges(associated_seqid_file_connection ,hit_target_ranges , 1 , 0 , "hap1_to_hap2" , hap1_id , hap2_id)
+				category = polygons_from_ranges(associated_seqid_file_connection ,hit_target_ranges , 1 , 0 , "hap1_to_unplaced" , hap1_id , query_name)
+				category = polygons_from_ranges(associated_seqid_file_connection ,hit_target_ranges , 0 , 1 , "hap2_to_unplaced" , hap2_id , query_name)
+				associated_seqid_file_connection.close()
+
+		if not marker_bed == "" :
+			# marker_bed == markers_db >> merged seq_id keys for pseudomolecules and input sequences
+			# 	markers_db[seq_id][marker_id] = [ ... , [seq_id , start , stop , marker_id] , ... ]
+			# marker_usage_db == clean_marker_set_by_seq
+			# 	clean_marker_set_by_seq[seq_id] = {
+			#		clean_marker_set_by_seq[seq_id]["id"] : seq_id
+			# 		clean_marker_set_by_seq[seq_id]["chr"] : chr_id
+			# 		clean_marker_set_by_seq[seq_id]["markers"] : [ ... , [chr_id , chr_pos , marker_id , seq_id, start , stop] , ... ]
+			# 		clean_marker_set_by_seq[seq_id]["range"] : [marker_pos_min , marker_pos_max] ,
+			# 		clean_marker_set_by_seq[seq_id]["orientation"] : ["+" or "-" or "."] }
+			# marker_map == marker_map_by_seq
+			#	marker_map[chr_id] = [ ... , [ int(pos) , marker_id ] , ... ]
+			marker_scale = {}
+			for marker in marker_map[chr_id] :
+				pos, marker_id = marker
+				marker_scale[marker_id] = pos
+
+			marker_all_sequence_table_file = query_id + ".marker_all_sequence.tsv"
+			marker_all_sequence_table_file_fullpath = out_dir + "/" + marker_all_sequence_table_file
+			associated_markers_file = query_id + ".marker_associations.tsv"
+			associated_markers_file_fullpath = out_dir + "/" + associated_markers_file
+			# marker_all_sequence_table contains
+			# 	a) all markers positions according to hap1 ,hap2 and unplaced query coordinates
+			#	b) info on being used or not
+			#  format associated_markers sets for segment plot >> [ x = t_start, y = t_height, xend = Q_start, yend = q_height, position(for color) , marker_id , category]
+			marker_all_sequence_table = []
+			associated_markers = []
+			used_markers_by_seq = {}
+			markers_ranges = {}
+
+			#print >> sys.stderr , "marker_usage_db keys: " + str(marker_usage_db.keys())
+
+			for component in agp_table :
+				#print >> sys.stderr , component
+				Obj_Name , Obj_start , Obj_End , CompntId , Orientation, group = component
+				#print >> sys.stderr , Obj_Name
+				if Obj_Name not in [ hap1_id , hap2_id , query_id ] :
+					#print >> sys.stderr , ">>> " + Obj_Name + " not listed"
+					continue
+				else :
+					#print >> sys.stderr , Obj_Name + " listed:"
+					if Obj_Name == query_id :
+						if Obj_Name in marker_usage_db :
+							# Do not search for markers in legacy contig, info not available, only pseudomoelcules and input sequences
+							if Obj_Name not in used_markers_by_seq :
+								used_markers_by_seq[Obj_Name] = []
+								markers_ranges[Obj_Name] = []
+
+							if not marker_usage_db[Obj_Name]["orientation"] == "." :
+								used_markers_by_seq[Obj_Name] += [str(x[2]) for x in marker_usage_db[Obj_Name]["markers"] ]
+								#print >> sys.stderr , "---- Obj_Name: " + Obj_Name + " has direction"
 							else :
-								usage = "FALSE"
-						else :
-							usage = "TRUE"
-						marker_all_sequence_table.append([chr_id , start , marker_id , marker_pos, usage])
-						# Find matches with unplaced
-						if (query_id in marker_bed )  and (marker_id in marker_bed[query_id]) :
-							for hit2 in marker_bed[query_id][marker_id] :
-								un_chr_id , un_start , un_stop , un_marker_id = hit2
-								associated_markers.append( [ start , 1 , un_start , 0 , marker_pos , marker_id , "hap1_to_unplaced" ] )
-						# Find matches with hap2
-						if marker_id in marker_bed[hap2_id] :
-							for hit3 in marker_bed[hap2_id][marker_id] :
-								hap2_chr_id , hap2_start , hap2_stop , hap2_marker_id = hit3
-								associated_markers.append( [ start , 1 , hap2_start , 0 , marker_pos , marker_id , "hap1_to_hap2" ] )
+								unordered_marker_list = [str(x[2]) for x in marker_usage_db[Obj_Name]["markers"]["+"] ]
+								unordered_marker_list += [str(x[2]) for x in marker_usage_db[Obj_Name]["markers"]["-"] ]
+								used_markers_by_seq[Obj_Name] += list(set(unordered_marker_list))
+								#print >> sys.stderr , "---- Obj_Name: " + Obj_Name + " does not have a direction"
+							markers_ranges[Obj_Name].append( [ Obj_Name , marker_usage_db[Obj_Name]["range"][0] , marker_usage_db[Obj_Name]["range"][1] , marker_usage_db[Obj_Name]["orientation"] , marker_usage_db[Obj_Name]["id"] , Obj_Name ] )
+						#else :
+						#	print >> sys.stderr , "---- CompntId: " + Obj_Name + " not in marker_usage_db"
 					else :
-						continue
+						if CompntId in marker_usage_db :
+							# Do not search for markers in legacy contig, info not available, only pseudomoelcules and input sequences
+							if Obj_Name not in used_markers_by_seq :
+								used_markers_by_seq[Obj_Name] = []
+								markers_ranges[Obj_Name] = []
 
-		if query_id in marker_bed :
-			# query_id has markers on it
-			for marker_id in sorted(marker_bed[query_id].keys()) :
-				for hit in marker_bed[query_id][marker_id] :
-					chr_id , start , stop , marker_id = hit
-					if marker_id in marker_scale :
-						marker_pos = marker_scale[marker_id]
-						if query_id in used_markers_by_seq :
-							if marker_id in used_markers_by_seq[query_id] :
-								usage = "TRUE"
+							if not marker_usage_db[CompntId]["orientation"] == "." :
+								used_markers_by_seq[Obj_Name] += [str(x[2]) for x in marker_usage_db[CompntId]["markers"] ]
+								#print >> sys.stderr , "---- CompntId: " + CompntId + " has direction"
 							else :
-								usage = "FALSE"
-						else :
-							usage = "FALSE"
+								unordered_marker_list = [str(x[2]) for x in marker_usage_db[CompntId]["markers"]["+"] ]
+								unordered_marker_list += [str(x[2]) for x in marker_usage_db[CompntId]["markers"]["-"] ]
+								used_markers_by_seq[Obj_Name] += list(set(unordered_marker_list))
+								#print >> sys.stderr , "---- CompntId: " + CompntId + " does not have a direction"
+							markers_ranges[Obj_Name].append( [ Obj_Name , marker_usage_db[CompntId]["range"][0] , marker_usage_db[CompntId]["range"][1] , marker_usage_db[CompntId]["orientation"] , marker_usage_db[CompntId]["id"] , Obj_Name ] )
+						#else :
+						#	print >> sys.stderr , "---- CompntId: " + CompntId + " not in marker_usage_db"
 
-						# Translate coordinates >> if "-" direction
-						if query_orientation == "-" :
-							start = str(int(query_len) - int(start))
+			#print >> sys.stderr , "used_markers_by_seq keys: " + str(used_markers_by_seq.keys())
+			# generate table of marker ranges -> coordinates on marker map -> pick the used markers regions in clean_marker_set_by_seq
+			markers_ranges_file = query_id + ".used_markers_range.tsv"
+			markers_ranges_file_fullpath = out_dir + "/" + markers_ranges_file
+			markers_ranges_file_fullpath_connection = open( markers_ranges_file_fullpath , 'w')
+			for chr_id in markers_ranges.keys() :
+				for range in markers_ranges[chr_id] :
+					print >> markers_ranges_file_fullpath_connection , "\t".join([ str(x) for x in range])
+			markers_ranges_file_fullpath_connection.close()
+
+			# Table format: seq_id , start ,stop , orientation , component_id , group
+			#  format associated_markers sets for segment plot >> [ x = t_start, y = t_height, xend = Q_start, yend = q_height, position(for color) , marker_id , category]
+			if hap1_id in marker_bed :
+				for marker_id in sorted(marker_bed[hap1_id].keys()) :
+					for hit in marker_bed[hap1_id][marker_id] :
+						chr_id , start , stop , marker_name = hit
 						# Add to marker_all_sequence_table
-						marker_all_sequence_table.append([query_id , start , marker_id , marker_pos , usage])
-						# Find matches with hap2
-						if marker_id in marker_bed[hap2_id] :
-							for hit2 in marker_bed[hap2_id][marker_id] :
-								hap2_chr_id , hap2_start , hap2_stop , hap2_marker_id = hit2
-								associated_markers.append( [ start , 1 , hap2_start , 0 , marker_pos , marker_id , "hap2_to_unplaced" ] )
-					else :
-						continue
-
-		if hap2_id in marker_bed :
-			for marker_id in sorted(marker_bed[hap2_id].keys()) :
-				for hit in marker_bed[hap2_id][marker_id] :
-					chr_id , start , stop , marker_id = hit
-					if marker_id in marker_scale :
-						marker_pos = marker_scale[marker_id]
-						if hap2_id in used_markers_by_seq :
-							if marker_id in used_markers_by_seq[hap2_id] :
+						if marker_id in marker_scale :
+							marker_pos = marker_scale[marker_id]
+							if hap1_id in used_markers_by_seq :
+								if marker_id in used_markers_by_seq[hap1_id] :
+									usage = "TRUE"
+								else :
+									usage = "FALSE"
+							else :
 								usage = "TRUE"
+							marker_all_sequence_table.append([chr_id , start , marker_id , marker_pos, usage])
+							# Find matches with unplaced
+							if (query_id in marker_bed )  and (marker_id in marker_bed[query_id]) :
+								for hit2 in marker_bed[query_id][marker_id] :
+									un_chr_id , un_start , un_stop , un_marker_id = hit2
+									associated_markers.append( [ start , 1 , un_start , 0 , marker_pos , marker_id , "hap1_to_unplaced" ] )
+							# Find matches with hap2
+							if marker_id in marker_bed[hap2_id] :
+								for hit3 in marker_bed[hap2_id][marker_id] :
+									hap2_chr_id , hap2_start , hap2_stop , hap2_marker_id = hit3
+									associated_markers.append( [ start , 1 , hap2_start , 0 , marker_pos , marker_id , "hap1_to_hap2" ] )
+						else :
+							continue
+
+			if query_id in marker_bed :
+				# query_id has markers on it
+				for marker_id in sorted(marker_bed[query_id].keys()) :
+					for hit in marker_bed[query_id][marker_id] :
+						chr_id , start , stop , marker_id = hit
+						if marker_id in marker_scale :
+							marker_pos = marker_scale[marker_id]
+							if query_id in used_markers_by_seq :
+								if marker_id in used_markers_by_seq[query_id] :
+									usage = "TRUE"
+								else :
+									usage = "FALSE"
 							else :
 								usage = "FALSE"
+
+							# Translate coordinates >> if "-" direction
+							if query_orientation == "-" :
+								start = str(int(query_len) - int(start))
+							# Add to marker_all_sequence_table
+							marker_all_sequence_table.append([query_id , start , marker_id , marker_pos , usage])
+							# Find matches with hap2
+							if marker_id in marker_bed[hap2_id] :
+								for hit2 in marker_bed[hap2_id][marker_id] :
+									hap2_chr_id , hap2_start , hap2_stop , hap2_marker_id = hit2
+									associated_markers.append( [ start , 1 , hap2_start , 0 , marker_pos , marker_id , "hap2_to_unplaced" ] )
 						else :
-							usage = "TRUE"
-						marker_all_sequence_table.append([chr_id , start , marker_id , marker_pos, usage])
-					else :
-						continue
+							continue
 
-		marker_all_sequence_table_file_fullpath = write_table(marker_all_sequence_table , marker_all_sequence_table_file_fullpath)
-		associated_markers_file_fullpath = write_table(associated_markers , associated_markers_file_fullpath)
+			if hap2_id in marker_bed :
+				for marker_id in sorted(marker_bed[hap2_id].keys()) :
+					for hit in marker_bed[hap2_id][marker_id] :
+						chr_id , start , stop , marker_id = hit
+						if marker_id in marker_scale :
+							marker_pos = marker_scale[marker_id]
+							if hap2_id in used_markers_by_seq :
+								if marker_id in used_markers_by_seq[hap2_id] :
+									usage = "TRUE"
+								else :
+									usage = "FALSE"
+							else :
+								usage = "TRUE"
+							marker_all_sequence_table.append([chr_id , start , marker_id , marker_pos, usage])
+						else :
+							continue
+
+			marker_all_sequence_table_file_fullpath = write_table(marker_all_sequence_table , marker_all_sequence_table_file_fullpath)
+			associated_markers_file_fullpath = write_table(associated_markers , associated_markers_file_fullpath)
+
+		else :
+			marker_all_sequence_table_file = "0"
+			associated_markers_file = "0"
+			markers_ranges_file = "0"
+
+
+		# Select the necessary plot Rmd file to render
+		# 	all scripts share the same input structure, missing/unused elements are substituted with 0
+		if not marker_bed == "" :
+			if not legacy_structure_file == "0" :
+				script=scriptDirectory + "/unplaced_qc.Rmd"
+			else :
+				script=scriptDirectory + "/unplaced_qc.no_legacy.Rmd"
+		else :
+			if not legacy_structure_file == "0" :
+				script=scriptDirectory + "/unplaced_qc.no_markers.Rmd"
+			else :
+				script=scriptDirectory + "/unplaced_qc.no_markers.no_legacy.Rmd"
+
+		## TOD0: Perform the rendering for each rejected sequence
+		out_file_name_prefix = query_id + "_qc"
+		output_file = out_dir + "/" + out_file_name_prefix
+		log_connection = open( out_dir + "/." + query_id + "_qc.log" , 'w')
+		err_connection = open( out_dir + "/." + query_id + "_qc.err" , 'w')
+		command = "Rscript -e 'library(rmarkdown) ; rmarkdown::render(\"" + os.path.realpath(script) + "\" , knit_root_dir = \"" + os.path.realpath(out_dir) + "\" , output_file = \"" + out_file_name_prefix + "\" , output_dir = \"" + os.path.realpath(out_dir) + "\" , params=list( filename = \"" + os.path.realpath(output_file) + "\" , Hap1= \"" + hap1_id + "\" , Hap2= \"" + hap2_id + "\" , unplacedID= \"" + query_id + "\" , structure = \"" + structure_file + "\" , legacy = \"" + legacy_structure_file + "\" , markers = \"" + marker_all_sequence_table_file + "\" , seq_relationships = \"" + associated_seqid_file + "\" , marker_relationship= \"" + associated_markers_file + "\" , markers_ranges= \"" + markers_ranges_file +"\"))'"
+		# Rscript -e 'library("rmarkdown") ; 		rmarkdown::render( "unplaced_qc.Rmd" ,                   knit_root_dir = ""                                    , output_file = "test"                           , output_dir = ""                                    , params=list( filename = "test"                                    , Hap1=   "NEW_Hap1_chr10"  , Hap2=   "NEW_Hap2_chr10"  , unplacedID= "seq99"            , structure = "seq99.structure.tsv" ,      legacy = "seq99.legacy_structure.tsv"      , markers = "seq99.marker_all_sequence.tsv"            , seq_relationships = "seq99.legacy_associations.tsv"   , marker_relationship = "seq99.marker_associations.tsv"    , markers_ranges = "seq99.used_markers_range.tsv"))'
+		print >> sys.stderr, "#### Running command: " + command
+		reportProcess = subprocess.Popen( command , shell=True , stdout=log_connection , stderr=err_connection )
+		output, error = reportProcess.communicate()
+		log_connection.close()
+		err_connection.close()
 
 	else :
-		marker_all_sequence_table_file = "0"
-		associated_markers_file = "0"
-		markers_ranges_file = "0"
+		print >> sys.stderr, "[WARNING] Unplaced sequence " + query_id + " was not found in the input FASTA files. No processing acna be performed."
 
-
-	# Select the necessary plot Rmd file to render
-	# 	all scripts share the same input structure, missing/unused elements are substituted with 0
-	if not marker_bed == "" :
-		if not legacy_structure_file == "0" :
-			script=scriptDirectory + "/unplaced_qc.Rmd"
-		else :
-			script=scriptDirectory + "/unplaced_qc.no_legacy.Rmd"
-	else :
-		if not legacy_structure_file == "0" :
-			script=scriptDirectory + "/unplaced_qc.no_markers.Rmd"
-		else :
-			script=scriptDirectory + "/unplaced_qc.no_markers.no_legacy.Rmd"
-
-	## TOD0: Perform the rendering for each rejected sequence
-	out_file_name_prefix = query_id + "_qc"
-	output_file = out_dir + "/" + out_file_name_prefix
-	log_connection = open( out_dir + "/." + query_id + "_qc.log" , 'w')
-	err_connection = open( out_dir + "/." + query_id + "_qc.err" , 'w')
-	command = "Rscript -e 'library(rmarkdown) ; rmarkdown::render(\"" + os.path.realpath(script) + "\" , knit_root_dir = \"" + os.path.realpath(out_dir) + "\" , output_file = \"" + out_file_name_prefix + "\" , output_dir = \"" + os.path.realpath(out_dir) + "\" , params=list( filename = \"" + os.path.realpath(output_file) + "\" , Hap1= \"" + hap1_id + "\" , Hap2= \"" + hap2_id + "\" , unplacedID= \"" + query_id + "\" , structure = \"" + structure_file + "\" , legacy = \"" + legacy_structure_file + "\" , markers = \"" + marker_all_sequence_table_file + "\" , seq_relationships = \"" + associated_seqid_file + "\" , marker_relationship= \"" + associated_markers_file + "\" , markers_ranges= \"" + markers_ranges_file +"\"))'"
-	# Rscript -e 'library("rmarkdown") ; 		rmarkdown::render( "unplaced_qc.Rmd" ,                   knit_root_dir = ""                                    , output_file = "test"                           , output_dir = ""                                    , params=list( filename = "test"                                    , Hap1=   "NEW_Hap1_chr10"  , Hap2=   "NEW_Hap2_chr10"  , unplacedID= "seq99"            , structure = "seq99.structure.tsv" ,      legacy = "seq99.legacy_structure.tsv"      , markers = "seq99.marker_all_sequence.tsv"            , seq_relationships = "seq99.legacy_associations.tsv"   , marker_relationship = "seq99.marker_associations.tsv"    , markers_ranges = "seq99.used_markers_range.tsv"))'
-	print >> sys.stderr, "#### Running command: " + command
-	reportProcess = subprocess.Popen( command , shell=True , stdout=log_connection , stderr=err_connection )
-	output, error = reportProcess.communicate()
-	log_connection.close()
-	err_connection.close()
 	outfiles = {}
 	outfiles["html"] = query_id + "_qc.html"
 	outfiles["pdf"] = query_id + "_qc.pdf"
