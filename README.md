@@ -16,9 +16,10 @@ HaploSync was developed to improve the quality of diploid genome assemblies. Thi
 * Resolves collapsed homozygous regions
 
 ## Resources
-  * [Go to manual](./manual/Readme.md)
   * [Go to installation](./manual/Install.md)
-
+  * [Go to manual](./manual/Readme.md)
+  * [Go to tutorials](./tutorials/Readme.md)
+  
 ## Cite:
 ### Pre-print:
 __Assembly of complete diploid phased chromosomes from draft genome sequences__\
