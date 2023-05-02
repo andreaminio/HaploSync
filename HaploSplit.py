@@ -76,6 +76,23 @@ def main() :
 	parser.add_argument("--hitgap" , dest="hitgap", default="100000",
 					help="Allowed  maximum distance (in bp) between local alignment hits to be merged as part of the same global alignment. [default: 100,000bp]", metavar="N")
 
+	# Update previous chromosome structure control
+	parser.add_argument("-u", "--upgrade", dest="upgrade",
+					#help="Previously computed structure to upgrade", metavar="structure.agp")
+					help=argparse.SUPPRESS)
+	parser.add_argument("--upgrade_format", dest="upgrade_format", default="agp" ,
+					#help="File format of the structure to upgrade [Default: agp] ", metavar="agp | AGP | block | BLOCK")
+					help=argparse.SUPPRESS)
+	parser.add_argument("--upgradeQC", "--upgrade_QC" , "--upgrade_qc" , dest="upgrade_QC", default=False , action="store_true",
+					#help="Stop after performing the QC of the markers before upgrading [Default: continue after QC]" )
+					help=argparse.SUPPRESS)
+	parser.add_argument("--structure2map", dest="map_ids",
+					#help="ID conversion between map and structure sequences [Default: identical]" )
+					help=argparse.SUPPRESS)
+	parser.add_argument("--conflict" , "--conflict_resolution" , dest="conflict_resolution", default="exit" ,
+					#help="Resolution policy for structure vs. map conflicts in contigs usage. Choice of "exit" [Default: exit]" )
+					help=argparse.SUPPRESS)
+
 	# Tiling path control
 	parser.add_argument("-e", "--exclusion", dest="exclusion",
 					help="Tab separated file of sequences pairs to prevent being placed in the same haplotype", metavar="exclusion.tsv")
@@ -487,63 +504,70 @@ def main() :
 	blacklist_1 = defaultdict(list)
 	blacklist_2 = defaultdict(list)
 
-	if options.Require1 or options.Require2 :
+
+
+	if options.upgrade :
+		known_structure = open(options.upgrade , "r")
+
+
+
+	elif options.Require1 or options.Require2 :
 		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] = Reading required sequence lists"
 
-	if options.Require1 :
-		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == Sequence required in 1st path"
-		for line in open(options.Require1,"r") :
-			try :
-				Target_sequence , loaded_path = line.rstrip().split("\t")
-				prompted_list = loaded_path.split(",")
-				forced_list_1[Target_sequence] = []
-				for id in prompted_list :
-					id_name = id[:-2]
-					id_length = query_len[id_name]
-					if id_length >= int(options.minR1) :
-						forced_list_1[Target_sequence].append(id)
-						forced_list_1_id_oriented.append(id)
-						forced_list_1_id.append(id_name)
-					else :
-						discarded.append(id_name)
-				print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] === Seq " + str(Target_sequence) + ": " + ",".join(forced_list_1[Target_sequence])
-			except :
-				pass
+		if options.Require1 :
+			print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == Sequence required in 1st path"
+			for line in open(options.Require1,"r") :
+				try :
+					Target_sequence , loaded_path = line.rstrip().split("\t")
+					prompted_list = loaded_path.split(",")
+					forced_list_1[Target_sequence] = []
+					for id in prompted_list :
+						id_name = id[:-2]
+						id_length = query_len[id_name]
+						if id_length >= int(options.minR1) :
+							forced_list_1[Target_sequence].append(id)
+							forced_list_1_id_oriented.append(id)
+							forced_list_1_id.append(id_name)
+						else :
+							discarded.append(id_name)
+					print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] === Seq " + str(Target_sequence) + ": " + ",".join(forced_list_1[Target_sequence])
+				except :
+					pass
 
 
-	if options.Require2 :
-		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == Sequence required in 2nd path"
-		for line in open(options.Require2,"r") :
-			try :
-				Target_sequence , loaded_path = line.rstrip().split("\t")
-				prompted_list = loaded_path.split(",")
-				forced_list_2[Target_sequence] = []
-				for id in prompted_list :
-					id_name = id[:-2]
-					id_length = query_len[id_name]
-					if id_length >= int(options.minR2) :
-						forced_list_2[Target_sequence].append(id)
-						forced_list_2_id_oriented.append(id)
-						forced_list_2_id.append(id_name)
-					else :
-						discarded.append(id_name)
-				print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] === Seq " + str(Target_sequence) + ": " + ",".join(forced_list_2[Target_sequence])
-			except :
-				pass
-		doubled = []
-		for seq_id in forced_list_2_id :
-			if seq_id in forced_list_1_id :
-				doubled.append(seq_id)
-		if not doubled == [] :
-			print >> sys.stdout, '[ERROR] Input error. Same sequence(s) required for both haplotypes'
-			print >> sys.stderr, '[ERROR] Input error. Same sequence(s) required for both haplotypes'
-			print >> sys.stderr, '[ERROR] duplicated sequences IDs:'
-			print >> sys.stderr, ", ".join([str(x) for x in doubled])
-			sys.exit(1)
+		if options.Require2 :
+			print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == Sequence required in 2nd path"
+			for line in open(options.Require2,"r") :
+				try :
+					Target_sequence , loaded_path = line.rstrip().split("\t")
+					prompted_list = loaded_path.split(",")
+					forced_list_2[Target_sequence] = []
+					for id in prompted_list :
+						id_name = id[:-2]
+						id_length = query_len[id_name]
+						if id_length >= int(options.minR2) :
+							forced_list_2[Target_sequence].append(id)
+							forced_list_2_id_oriented.append(id)
+							forced_list_2_id.append(id_name)
+						else :
+							discarded.append(id_name)
+					print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] === Seq " + str(Target_sequence) + ": " + ",".join(forced_list_2[Target_sequence])
+				except :
+					pass
+			doubled = []
+			for seq_id in forced_list_2_id :
+				if seq_id in forced_list_1_id :
+					doubled.append(seq_id)
+			if not doubled == [] :
+				print >> sys.stdout, '[ERROR] Input error. Same sequence(s) required for both haplotypes'
+				print >> sys.stderr, '[ERROR] Input error. Same sequence(s) required for both haplotypes'
+				print >> sys.stderr, '[ERROR] duplicated sequences IDs:'
+				print >> sys.stderr, ", ".join([str(x) for x in doubled])
+				sys.exit(1)
 
-	if not discarded == [] :
-		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == Discarded required sequences because of short length (hap1 <" + str(options.minR1) +" or hap2 <" + str(options.minR2) + ")"
-		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] === " + ",".join(discarded)
+		if not discarded == [] :
+			print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == Discarded required sequences because of short length (hap1 <" + str(options.minR1) +" or hap2 <" + str(options.minR2) + ")"
+			print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] === " + ",".join(discarded)
 
 	# Generate blacklist
 	print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] = Blacklists"
