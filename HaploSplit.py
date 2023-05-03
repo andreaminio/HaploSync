@@ -78,25 +78,20 @@ def main() :
 
 	# Update previous chromosome structure control
 	parser.add_argument("-u", "--upgrade", dest="upgrade",
-					#help="Previously computed structure to upgrade", metavar="structure.agp")
-					help=argparse.SUPPRESS)
+					help="Previously computed structure to upgrade", metavar="structure.agp")
 	parser.add_argument("--upgrade_format", dest="upgrade_format", default="agp" ,
-					#help="File format of the structure to upgrade [Default: agp] ", metavar="agp | AGP | block | BLOCK")
-					help=argparse.SUPPRESS)
+					help="File format of the structure to upgrade [Default: agp] ", metavar="agp | AGP | block | BLOCK")
 	parser.add_argument("--upgradeQC", "--upgrade_QC" , "--upgrade_qc" , dest="upgrade_QC", default=False , action="store_true",
-					#help="Stop after performing the QC of the markers before upgrading [Default: continue after QC]" )
-					help=argparse.SUPPRESS)
+					help="Stop after performing the QC of the markers before upgrading [Default: continue after QC]" )
 	parser.add_argument("--structure2map", dest="map_ids",
-					#help="ID conversion between map and structure sequences [Default: identical]" )
-					help=argparse.SUPPRESS)
+					help="ID conversion between map and structure sequences [Default: identical]" )
 	parser.add_argument("--conflict" , dest="conflict_resolution", default="exit" ,
-#					help=textwrap.dedent('''Resolution policy for structure vs. map conflicts in contigs usage [Default: exit].  Choice of:
-#	"exit": report and quit on conflicts
-#	"ignore" : ignore the conflict
-#	"release" : sequence is released from the given location and allowed to relocate according to the new map'''),
-#						metavar = "exit"
-#						)
-					help=argparse.SUPPRESS)
+					help=textwrap.dedent('''Resolution policy for structure vs. map conflicts in contigs usage [Default: exit].  Choice of:
+	"exit": report and quit on conflicts
+	"ignore" : ignore the conflict
+	"release" : sequence is released from the given location and allowed to relocate according to the new map'''),
+						metavar = "exit"
+						)
 
 	# Tiling path control
 	parser.add_argument("-e", "--exclusion", dest="exclusion",
@@ -511,16 +506,14 @@ def main() :
 
 	conflict_resolution = options.conflict_resolution.lower()
 
-	if options.upgrade :
+	if options.upgrade and options.marker_map and options.markers_hits :
+		# TODO: To Test
 		options.force_direction1 = True
 		options.force_direction2 = True
-		# ToDo: read structure file
 		structure_db = read_known_structure( options.upgrade, options.upgrade_format , options.map_ids )
-		# TODO: QC structure compatibility
-		forced_list_1 , forced_list_2 , discarded , conflicts_db = upgrade_qc( structure_db , conflict_resolution )
-		# TODO: print conflicts
+		forced_list_1 , forced_list_2 , conflicts_db = upgrade_qc( structure_db , marker_map_by_seq , marker_hits_by_seq , conflict_resolution )
 		conflicts_file_name = options.out + ".map2structure_conflicts.txt"
-		conflicts_file_name = print_conflicts( conflicts_db , marker_map_by_seq , marker_hits_by_seq , conflicts_file_name )
+		conflicts_file_name = print_conflicts( conflicts_db , conflicts_file_name )
 		# Check if continue or quit
 		if options.upgrade_QC or ( conflicts_db != {} and conflict_resolution == "exit" ):
 			exit(1)

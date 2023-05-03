@@ -4,6 +4,7 @@ import subprocess
 import sys
 import operator
 import networkx as nx
+import numpy
 from Bio import SeqIO
 from Bio.Seq import Seq
 import gc
@@ -6785,40 +6786,248 @@ def report_marker_usage( markers_bed_file , marker_map_by_seq , marker_map_by_id
 def read_known_structure( structure_file_name , file_format , map_ids_file ) :
 	structure_db = {}
 
+	map_ids = {}
+
+	for line in open(map_ids_file , "r") :
+		id , chr , hap = line.rstrip().split("\t")
+		if (not id in map_ids) :
+			map_ids[id] = [ hap , chr ]
+		else :
+			print >> sys.stderr , "[WARNING] " + id + " is present twice in the conversion table. First entry was used"
+
 	if file_format.lower() == "agp" :
 		agp_db = read_agp(structure_file_name)
-		for chr in sorted(agp_db.keys()) :
-			structure_db[chr] = []
+		for str_chr in sorted(agp_db.keys()) :
+			hap , chr = map_ids[str_chr]
+			if chr not in structure_db :
+				structure_db[chr] = { "hap1" : {} , "hap2" : {} }
 			for start in sorted(agp_db[chr].keys()) :
-				Obj_Name , Obj_start , Obj_End , PartNum , Compnt_Type , CompntId , CompntStart , CompntEnd ,  Orientation = agp_db[chr][start]
-				structure_db[chr].append( [ CompntId + "|" + Orientation ] )
+				Obj_Name , Obj_start , Obj_End , PartNum , Compnt_Type , CompntId , CompntStart , CompntEnd ,  Orientation = agp_db[str_chr][start]
+				structure_db[chr][hap][PartNum] = CompntId + "|" + Orientation
 
 	elif file_format.lower() == "block" :
 		block_db = read_block(structure_file_name)
-		for chr in sorted(block_db.keys()) :
-			structure_db[chr] = []
-			for block_id in sorted(block_db[chr].keys()) :
+		for str_chr in sorted(block_db.keys()) :
+			hap , chr = map_ids[str_chr]
+			if chr not in structure_db :
+				structure_db[chr] = { "hap1" : {} , "hap2" : {} }
+			for block_id in sorted(block_db[str_chr].keys()) :
 				seqID, start , stop, strand = block_db[chr][block_id]
-				structure_db[chr].append( [ seqID + "|" + strand ] )
+				structure_db[chr][hap][block_id] = seqID + "|" + strand
 
 	return structure_db
 
 
-# TODO: QC structure compatibility
-def upgrade_qc( structure_db , map_db , marker_db , conflict_resolution) :
-	structure_db[chr].append([seqID + "|" + strand])
-	# map_db[seq_id] = [ ... , [ int(pos) , marker_id ] , ... ]
+def upgrade_qc( structure_db , map_byseq_db , marker_db , conflict_resolution) :
+	# structure_db[chr][num] = [seqID + "|" + strand]
+	# map_db[marker_chr] = [ ... , [ int(pos) , marker_id ] , ... ]
 	# marker_db[seq_id] = [ ... , [ int(start) , int(stop) , marker_id , marker_chr , int(marker_pos) ] , ... ]
 
-	forced_list_1 = []
-	forced_list_2 = []
-	discarded = []
-	conflicts_db = {}
+	forced_list = { "hap1" : defaultdict(list) , "hap2" : defaultdict(list) }
+	conflicts_db = defaultdict(list)
 
-	return forced_list_1, forced_list_2, discarded, conflicts_db
+	# 0 - To test (order of complexity of code):
+	#	0 - Map support for the sequence
+	#	1 - Chromosome correspondence
+	#	2 - Order
+	#	3 - Orientation
+	# Then add to conflict and discarded
+
+	ranges_db = {}
+
+	### Cross stricture and marker info
+	#### Each chromosome
+	for chr in sorted(structure_db.keys()):
+		if chr not in ranges_db :
+			ranges_db[chr] = { "hap1" : {} , "hap2" : {} }
+
+		##### for each haplotype
+		for hap in [ "hap1" , "hap2" ] :
+			###### Each sequence
+			for num in sorted(structure_db[chr].keys()):
+				seqID , strand = structure_db[chr][hap][num].split("|")
+
+				# Map support for the sequence
+				if not seqID in marker_db :
+					conflicts_db[seqID] = [ seqID , "Unsupported" , "No markers on the sequence"]
+				else :
+					forced_list[hap][chr].append(structure_db[chr][hap][num])
+					seqID_markers = marker_db[seqID]
+					# marker_db[seq_id] = [ ... , [ int(start) , int(stop) , marker_id , marker_chr , int(marker_pos) ] , ... ]
+
+					# Chromosome conflicts
+					found_marker = {}
+					for marker in seqID_markers.sort(key=lambda x: x[0]) :
+						marker_start, marker_stop , marker_id, marker_chr, marker_pos = marker
+
+						if marker_chr not in found_marker :
+							found_marker[marker_chr] = { "list" : [] }
+
+						found_marker[marker_chr]["list"].append(marker_pos)
+
+					found_marker_chrs = sorted(found_marker.keys())
+					for marker_chr in found_marker_chrs :
+						list_of_marker_pos = found_marker[marker_chr]["list"]
+						found_marker[marker_chr]["range"] = [ min( list_of_marker_pos ) , max( list_of_marker_pos ) ]
+						found_marker[marker_chr]["count"] = len(list_of_marker_pos)
+
+					if not len(found_marker_chrs) == 1 :
+						# Markers from more than one chr
+						if chr not in found_marker_chrs :
+							# Different chromosomes only
+							Chromosome_conflict = True
+							conflicts_db[seqID] = [
+								seqID ,
+								"Chromosome_conflict-Wrong_chr" ,
+								"Located on: " + str(chr) + " - Markers on (" + str(len(found_marker_chrs)) + ") chrs: " + ", ".join( [ str(x) for x in found_marker_chrs ] )
+								]
+						else :
+							# right chr is in
+							chr_count = [ [  x , found_marker[x]["count"] ] for x in found_marker.keys() ].sort(key=lambda x: x[1] , reverse=True)
+							if not found_marker[chr]["count"] > chr_count[1][1] :
+								# chr doesn't have the most markers
+								Chromosome_conflict = True
+								conflicts_db[seqID] = [
+									seqID,
+									"Chromosome_conflict-Not_highest_support",
+									"Location on " + str(chr) + " supported by " + str(found_marker[chr]["count"]) + " markers - Most suppor for " +  chr_count[0][0] + " with " + str(chr_count[0][1]) + " markers"
+									]
+							else :
+								Chromosome_conflict = False
+								ranges_db[chr][hap][num] = {
+									"id" : seqID ,
+									"list" : found_marker[chr]["list"] ,
+									"range" : found_marker[chr]["range"] ,
+									"in_order" : []
+									}
+					else :
+						# Markers form one chr only
+						if chr not in found_marker_chrs :
+							# Different chromosome
+							Chromosome_conflict = True
+							conflicts_db[seqID] = [
+								seqID ,
+								"Chromosome_conflict-Wrong_chr" ,
+								"Located on: " + str(chr) + " - Markers on (1) chr: " + found_marker_chrs[0]
+								]
+
+						else :
+							Chromosome_conflict = False
+							ranges_db[chr][hap][num] = {
+								"id" : seqID ,
+								"list" : found_marker[chr]["list"] ,
+								"range" : found_marker[chr]["range"] ,
+								"in_order" : []
+								}
+
+					# Order (best chromosome)
+					if not Chromosome_conflict :
+						for prev in reversed(range( num -1 )) :
+							if prev in ranges_db[chr][hap] :
+								if ranges_db[chr][hap][prev]["in_order"] == "Correct" :
+									break
+						actual_range = ranges_db[chr][hap][num]
+						prev_range = ranges_db[chr][hap][prev]
+
+						if actual_range[0] < prev_range[1] :
+							ranges_db[chr][hap][prev]["in_order"] = "Not_correct"
+							conflicts_db[seqID] = [
+								seqID ,
+								"Order_conflict" ,
+								"Marker range [" + str(actual_range[0]) + "-" + str(actual_range[1]) + "] - Expected to be after " + ranges_db[chr][hap][prev]["id"] + " with marker range [" + str(prev_range[0]) + "-" + str(prev_range[1]) + "]"
+								]
+
+						# Orientation QC
+						marker_list = ranges_db[chr][hap][num]["list"]
+						marker_orientation = marker_progression( marker_list )
+
+						if marker_orientation == "single" :
+							conflicts_db[seqID] = [
+								seqID,
+								"Markers",
+								"One marker, not oriented"
+							]
+						elif marker_orientation == "-" or marker_orientation == "+" :
+							if not strand == marker_orientation :
+								conflicts_db[seqID] = [
+									seqID,
+									"Orientation",
+									"Opposite sequence orientation"
+								]
+						else :
+							# marker_orientation == "undetectable"
+							conflicts_db[seqID] = [
+								seqID ,
+								"Markers" ,
+								"Multiple markers, not oriented"
+								]
+
+	# 2 - Clean forced_list_1 and forced_list_2 according to the conflict_resolution policy
+	good_list = { "hap1" : [] , "hap2" : [] }
+
+	if conflict_resolution == "release":
+		# Release the conflicting sequences from the location in the pre-computed structure
+		reasons_to_remove = [
+			"Orientation" ,
+			"Order_conflict" ,
+			"Chromosome_conflict-Not_highest_support",
+			"Chromosome_conflict-Wrong_chr"
+			]
+	elif conflict_resolution == "ignore":
+		# Clean the ones without info or pointing to a different chromosome only
+		reasons_to_remove = [
+			"Order_conflict" ,
+			"Chromosome_conflict-Wrong_chr"
+			]
+	else :
+		# conflict_resolution == "exit": The tool quits after saving Chromosome_conflict, no need for doing anything at this point
+		reasons_to_remove = []
+
+	for hap in sorted(forced_list.keys()) :
+		for chr in sorted(forced_list[hap].keys()) :
+			element = forced_list[hap][chr]
+			seqID , strand = element.split("|")
+
+			if not seqID in conflicts_db[seqID] :
+				# Sequence has no conflicts >> good!
+				if chr not in good_list[hap]:
+					good_list[hap][chr] = []
+				good_list[hap][chr].append(element)
+			else :
+				reason = conflicts_db[seqID][1]
+				if reason not in reasons_to_remove:
+					# Sequence has conflicts but still good to use
+					if chr not in good_list[hap]:
+						good_list[hap][chr] = []
+					good_list[hap][chr].append(element)
+
+	return good_list["hap1"], good_list["hap2"], conflicts_db
 
 
-# TODO: print conflicts
-def print_conflicts(conflicts_db, conflicts_file_name) :
+def print_conflicts(conflicts_db, file_name) :
+	conflicts_file = open(file_name , "w+")
+	for seqID in sorted(conflicts_db.keys()) :
+		print >> conflicts_file , "\t".join( [ str(x) for x in conflicts_db[seqID] ] )
+	conflicts_file.close()
 
-	return conflicts_file_name
+	return file_name
+
+
+def marker_progression(marker_pos_list):
+	delta_sign = [numpy.sign(x - y) for x, y in zip(marker_pos_list, marker_pos_list[1:])]
+	sign_count = dict((i, delta_sign.count(i)) for i in delta_sign)
+
+	if sign_count == {}:
+		direction = "single"
+	elif (-1 not in sign_count):
+		direction = "-"
+	elif (1 not in sign_count):
+		direction = "+"
+	elif sign_count[1] > sign_count[-1]:
+		direction = "-"
+	elif sign_count[1] < sign_count[-1]:
+		direction = "+"
+	else:
+		direction = "undetectable"
+
+	return direction
