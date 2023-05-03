@@ -6781,3 +6781,44 @@ def report_marker_usage( markers_bed_file , marker_map_by_seq , marker_map_by_id
 
 	return hits_on_seq
 
+
+def read_known_structure( structure_file_name , file_format , map_ids_file ) :
+	structure_db = {}
+
+	if file_format.lower() == "agp" :
+		agp_db = read_agp(structure_file_name)
+		for chr in sorted(agp_db.keys()) :
+			structure_db[chr] = []
+			for start in sorted(agp_db[chr].keys()) :
+				Obj_Name , Obj_start , Obj_End , PartNum , Compnt_Type , CompntId , CompntStart , CompntEnd ,  Orientation = agp_db[chr][start]
+				structure_db[chr].append( [ CompntId + "|" + Orientation ] )
+
+	elif file_format.lower() == "block" :
+		block_db = read_block(structure_file_name)
+		for chr in sorted(block_db.keys()) :
+			structure_db[chr] = []
+			for block_id in sorted(block_db[chr].keys()) :
+				seqID, start , stop, strand = block_db[chr][block_id]
+				structure_db[chr].append( [ seqID + "|" + strand ] )
+
+	return structure_db
+
+
+# TODO: QC structure compatibility
+def upgrade_qc( structure_db , map_db , marker_db , conflict_resolution) :
+	structure_db[chr].append([seqID + "|" + strand])
+	# map_db[seq_id] = [ ... , [ int(pos) , marker_id ] , ... ]
+	# marker_db[seq_id] = [ ... , [ int(start) , int(stop) , marker_id , marker_chr , int(marker_pos) ] , ... ]
+
+	forced_list_1 = []
+	forced_list_2 = []
+	discarded = []
+	conflicts_db = {}
+
+	return forced_list_1, forced_list_2, discarded, conflicts_db
+
+
+# TODO: print conflicts
+def print_conflicts(conflicts_db, conflicts_file_name) :
+
+	return conflicts_file_name

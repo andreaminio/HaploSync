@@ -15,7 +15,7 @@ def main() :
 
 	###### Options and help ######
 
-	parser = argparse.ArgumentParser()
+	parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
 
 	#### Input sequences
 	parser.add_argument("-i", "--input" , dest="query",
@@ -89,8 +89,13 @@ def main() :
 	parser.add_argument("--structure2map", dest="map_ids",
 					#help="ID conversion between map and structure sequences [Default: identical]" )
 					help=argparse.SUPPRESS)
-	parser.add_argument("--conflict" , "--conflict_resolution" , dest="conflict_resolution", default="exit" ,
-					#help="Resolution policy for structure vs. map conflicts in contigs usage. Choice of "exit" [Default: exit]" )
+	parser.add_argument("--conflict" , dest="conflict_resolution", default="exit" ,
+#					help=textwrap.dedent('''Resolution policy for structure vs. map conflicts in contigs usage [Default: exit].  Choice of:
+#	"exit": report and quit on conflicts
+#	"ignore" : ignore the conflict
+#	"release" : sequence is released from the given location and allowed to relocate according to the new map'''),
+#						metavar = "exit"
+#						)
 					help=argparse.SUPPRESS)
 
 	# Tiling path control
@@ -504,12 +509,21 @@ def main() :
 	blacklist_1 = defaultdict(list)
 	blacklist_2 = defaultdict(list)
 
-
+	conflict_resolution = options.conflict_resolution.lower()
 
 	if options.upgrade :
-		known_structure = open(options.upgrade , "r")
-
-
+		options.force_direction1 = True
+		options.force_direction2 = True
+		# ToDo: read structure file
+		structure_db = read_known_structure( options.upgrade, options.upgrade_format , options.map_ids )
+		# TODO: QC structure compatibility
+		forced_list_1 , forced_list_2 , discarded , conflicts_db = upgrade_qc( structure_db , conflict_resolution )
+		# TODO: print conflicts
+		conflicts_file_name = options.out + ".map2structure_conflicts.txt"
+		conflicts_file_name = print_conflicts( conflicts_db , marker_map_by_seq , marker_hits_by_seq , conflicts_file_name )
+		# Check if continue or quit
+		if options.upgrade_QC or ( conflicts_db != {} and conflict_resolution == "exit" ):
+			exit(1)
 
 	elif options.Require1 or options.Require2 :
 		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] = Reading required sequence lists"
@@ -3461,7 +3475,7 @@ def main() :
 							plot_files[comparison]["Reports"][queryID]["html"] = make_no_genes_html_report(os.path.basename(coords_file), os.path.basename(coords_file_self), haplodup_dir, outdir_name, queryID, refID, "3000", "90")
 							plot_files[comparison]["Reports"][queryID]["pdf"] = make_no_genes_pdf_report( coords_file , coords_file_self, haplodup_dir, outdir_name, queryID, refID, "3000", "90")
 						else :
-							print >> sys.stderr , "[WARNING] Hap1 sequence " + hap1ID + " has no related sequence in Hap2 "
+							print >> sys.stderr , "[WARNING] Hap1 sequence " + queryID + " has no related sequence in Hap2 "
 				elif comparison == "Hap2_vs_Hap2" :
 					continue
 				else :
@@ -3487,6 +3501,7 @@ def main() :
 	print >> sys.stderr , "##############################"
 	print >> sys.stderr , "# Done"
 	print >> sys.stderr , "##############################"
+
 
 if __name__ == '__main__':
 	main()
