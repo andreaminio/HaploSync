@@ -6968,6 +6968,7 @@ def upgrade_qc( structure_db , map_byseq_db , marker_db , conflict_resolution) :
 	if conflict_resolution == "release":
 		# Release the conflicting sequences from the location in the pre-computed structure
 		reasons_to_remove = [
+			"Unsupported",
 			"Orientation" ,
 			"Order_conflict" ,
 			"Chromosome_conflict-Not_highest_support",
@@ -6976,6 +6977,7 @@ def upgrade_qc( structure_db , map_byseq_db , marker_db , conflict_resolution) :
 	elif conflict_resolution == "ignore":
 		# Clean the ones without info or pointing to a different chromosome only
 		reasons_to_remove = [
+			"Unsupported" ,
 			"Order_conflict" ,
 			"Chromosome_conflict-Wrong_chr"
 			]
