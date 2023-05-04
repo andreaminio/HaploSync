@@ -6834,7 +6834,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 	# marker_db[seq_id] = [ ... , [ int(start) , int(stop) , marker_id , marker_chr , int(marker_pos) ] , ... ]
 
 	forced_list = { "hap1" : defaultdict(list) , "hap2" : defaultdict(list) }
-	conflicts_db = defaultdict(list)
+	conflicts_db = {}
 
 	# 0 - To test (order of complexity of code):
 	#	0 - Map support for the sequence
