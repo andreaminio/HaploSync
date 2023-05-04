@@ -6798,22 +6798,24 @@ def read_known_structure( structure_file_name , file_format , map_ids_file ) :
 	if file_format.lower() == "agp" :
 		agp_db = read_agp(structure_file_name)
 		for str_chr in sorted(agp_db.keys()) :
-			hap , chr = map_ids[str_chr]
-			if chr not in structure_db :
-				structure_db[chr] = { "hap1" : {} , "hap2" : {} }
-			for start in sorted(agp_db[str_chr].keys()) :
-				Obj_Name , Obj_start , Obj_End , PartNum , Compnt_Type , CompntId , CompntStart , CompntEnd ,  Orientation = agp_db[str_chr][start]
-				structure_db[chr][hap][PartNum] = CompntId + "|" + Orientation
+			if str_chr in map_ids :
+				hap , chr = map_ids[str_chr]
+				if chr not in structure_db :
+					structure_db[chr] = { "hap1" : {} , "hap2" : {} }
+				for start in sorted(agp_db[str_chr].keys()) :
+					Obj_Name , Obj_start , Obj_End , PartNum , Compnt_Type , CompntId , CompntStart , CompntEnd ,  Orientation = agp_db[str_chr][start]
+					structure_db[chr][hap][PartNum] = CompntId + "|" + Orientation
 
 	elif file_format.lower() == "block" :
 		block_db = read_block(structure_file_name)
 		for str_chr in sorted(block_db.keys()) :
-			hap , chr = map_ids[str_chr]
-			if chr not in structure_db :
-				structure_db[chr] = { "hap1" : {} , "hap2" : {} }
-			for block_id in sorted(block_db[str_chr].keys()) :
-				seqID, start , stop, strand = block_db[chr][block_id]
-				structure_db[chr][hap][block_id] = seqID + "|" + strand
+			if str_chr in map_ids:
+				hap , chr = map_ids[str_chr]
+				if chr not in structure_db :
+					structure_db[chr] = { "hap1" : {} , "hap2" : {} }
+				for block_id in sorted(block_db[str_chr].keys()) :
+					seqID, start , stop, strand = block_db[chr][block_id]
+					structure_db[chr][hap][block_id] = seqID + "|" + strand
 
 	return structure_db
 
