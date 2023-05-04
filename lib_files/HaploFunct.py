@@ -6816,7 +6816,6 @@ def read_known_structure( structure_file_name , file_format , map_ids_file ) :
 				for block_id in sorted(block_db[str_chr].keys()) :
 					seqID, start , stop, strand = block_db[chr][block_id]
 					structure_db[chr][hap][block_id] = seqID + "|" + strand
-
 	return structure_db
 
 
