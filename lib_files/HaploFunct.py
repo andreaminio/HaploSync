@@ -6866,8 +6866,8 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 					print >> sys.stdout, '#### ' + seqID + ": not supported by any marker"
 				else :
 					forced_list[hap][chr].append(structure_db[chr][hap][num])
-					seqID_markers = marker_db[seqID]
-					print >> sys.stderr, seqID_markers
+					seqID_markers = marker_db[seqID][:]
+					#print >> sys.stderr, seqID_markers
 					seqID_markers.sort(key=lambda x: x[0])
 					marker_count = len(seqID_markers)
 					# marker_db[seq_id] = [ ... , [ int(start) , int(stop) , marker_id , marker_chr , int(marker_pos) ] , ... ]
@@ -6876,7 +6876,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 					found_marker = {}
 					for marker_num in range(marker_count) :
 						marker_start, marker_stop , marker_id, marker_chr, marker_pos = seqID_markers[marker_num]
-						print >> sys.stderr, [marker_start, marker_stop , marker_id, marker_chr, marker_pos]
+						#print >> sys.stderr, [marker_start, marker_stop , marker_id, marker_chr, marker_pos]
 
 						if marker_chr not in found_marker :
 							found_marker[marker_chr] = { "list" : [] }
@@ -6942,21 +6942,22 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 
 					# Order (best chromosome)
 					if not Chromosome_conflict :
-						for prev in reversed(range( num -1 )) :
-							if prev in ranges_db[chr][hap] :
-								if ranges_db[chr][hap][prev]["in_order"] == "Correct" :
-									break
-						actual_range = ranges_db[chr][hap][num]
-						prev_range = ranges_db[chr][hap][prev]
+						if num > 0 :
+							for prev in reversed(range( num -1 )) :
+								if prev in ranges_db[chr][hap] :
+									if ranges_db[chr][hap][prev]["in_order"] == "Correct" :
+										break
+							actual_range = ranges_db[chr][hap][num]
+							prev_range = ranges_db[chr][hap][prev]
 
-						if actual_range[0] < prev_range[1] :
-							ranges_db[chr][hap][prev]["in_order"] = "Not_correct"
-							conflicts_db[seqID] = [
-								seqID ,
-								"Order_conflict" ,
-								"Marker range [" + str(actual_range[0]) + "-" + str(actual_range[1]) + "] - Expected to be after " + ranges_db[chr][hap][prev]["id"] + " with marker range [" + str(prev_range[0]) + "-" + str(prev_range[1]) + "]"
-								]
-							print >> sys.stdout, '#### ' + seqID + ": Structure and map discord on the sequence is position in the chromosome"
+							if actual_range[0] < prev_range[1] :
+								ranges_db[chr][hap][prev]["in_order"] = "Not_correct"
+								conflicts_db[seqID] = [
+									seqID ,
+									"Order_conflict" ,
+									"Marker range [" + str(actual_range[0]) + "-" + str(actual_range[1]) + "] - Expected to be after " + ranges_db[chr][hap][prev]["id"] + " with marker range [" + str(prev_range[0]) + "-" + str(prev_range[1]) + "]"
+									]
+								print >> sys.stdout, '#### ' + seqID + ": Structure and map discord on the sequence is position in the chromosome"
 						# Orientation QC
 						marker_list = ranges_db[chr][hap][num]["list"]
 						marker_orientation = marker_progression( marker_list )
