@@ -6905,7 +6905,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 							# right chr is in
 							chr_count = [ [  x , found_marker[x]["count"] ] for x in found_marker.keys() ]
 							chr_count.sort(key=lambda x: x[1] , reverse=True)
-							print >> sys.stderr, chr_count
+							#print >> sys.stderr, chr_count
 
 							if not found_marker[chr]["count"] > chr_count[1][1] :
 								# chr doesn't have the most markers
@@ -6961,9 +6961,8 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 							if prev in ranges_db[chr][hap] :
 								prev_range = ranges_db[chr][hap][prev]["range"]
 
-							#print >> sys.stderr, prev_range
-							#print >> sys.stderr, actual_range
-
+								#print >> sys.stderr, prev_range
+								#print >> sys.stderr, actual_range
 								if actual_range[0] < prev_range[1] :
 									ranges_db[chr][hap][prev]["in_order"] = "Not_correct"
 									if not seqID in conflicts_db:
@@ -6973,8 +6972,6 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 											"Marker range [" + str(actual_range[0]) + "-" + str(actual_range[1]) + "] - Expected to be after " + ranges_db[chr][hap][prev]["id"] + " with marker range [" + str(prev_range[0]) + "-" + str(prev_range[1]) + "]"
 											]
 									print >> sys.stderr, '#### ' + seqID + ": Structure and map discord on the sequence is position in the chromosome"
-
-
 
 						# Orientation QC
 						marker_list = ranges_db[chr][hap][num]["list"]
