@@ -6809,7 +6809,7 @@ def read_known_structure( structure_file_name , file_format , map_ids_file ) :
 					Obj_Name , Obj_start , Obj_End , PartNum , Compnt_Type , CompntId , CompntStart , CompntEnd ,  Orientation = agp_db[str_chr][start]
 					if Compnt_Type == "W" :
 						block_id += 1
-						structure_db[chr][hap][PartNum] = CompntId + "|" + Orientation
+						structure_db[chr][hap][block_id] = CompntId + "|" + Orientation
 
 	elif file_format.lower() == "block" :
 		block_db = read_block(structure_file_name)
