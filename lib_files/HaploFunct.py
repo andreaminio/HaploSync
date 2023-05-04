@@ -6866,13 +6866,13 @@ def upgrade_qc( structure_db , map_byseq_db , marker_db , conflict_resolution) :
 					print >> sys.stdout, '#### ' + seqID + ": not supported by any marker"
 				else :
 					forced_list[hap][chr].append(structure_db[chr][hap][num])
-					seqID_markers = marker_db[seqID]
+					seqID_markers = marker_db[seqID].sort(key=lambda x: x[0])
 					print >> sys.stderr , seqID_markers
 					# marker_db[seq_id] = [ ... , [ int(start) , int(stop) , marker_id , marker_chr , int(marker_pos) ] , ... ]
 
 					# Chromosome conflicts
 					found_marker = {}
-					for marker in seqID_markers.sort(key=lambda x: x[0]) :
+					for marker in seqID_markers :
 						marker_start, marker_stop , marker_id, marker_chr, marker_pos = marker
 
 						if marker_chr not in found_marker :
