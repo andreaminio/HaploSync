@@ -6787,7 +6787,7 @@ def read_known_structure( structure_file_name , file_format , map_ids_file ) :
 	# TODO: add logging info
 
 	print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == Reading " + structure_file_name + "file"
-	print >> sys.stdout, '## Reading ' + structure_file_name + "file"
+	print >> sys.stderr, '## Reading ' + structure_file_name + "file"
 
 	structure_db = {}
 	map_ids = {}
@@ -6851,11 +6851,11 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 		if chr not in ranges_db :
 			ranges_db[chr] = { "hap1" : {} , "hap2" : {} }
 
-		print >> sys.stdout, '## QC of sequences associated to ' + chr + " in the given structure"
+		print >> sys.stderr, '## QC of sequences associated to ' + chr + " in the given structure"
 
 		##### for each haplotype
 		for hap in [ "hap1" , "hap2" ] :
-			print >> sys.stdout, '### QC of ' + hap
+			print >> sys.stderr, '### QC of ' + hap
 			###### Each sequence
 			for num in sorted(structure_db[chr][hap].keys()):
 				seqID , strand = structure_db[chr][hap][num].split("|")
@@ -6863,7 +6863,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 				# Map support for the sequence
 				if not seqID in marker_db :
 					conflicts_db[seqID] = [ seqID , "Unsupported" , "No markers on the sequence"]
-					print >> sys.stdout, '#### ' + seqID + ": not supported by any marker"
+					print >> sys.stderr, '#### ' + seqID + ": not supported by any marker"
 				else :
 					forced_list[hap][chr].append(structure_db[chr][hap][num])
 					seqID_markers = marker_db[seqID][:]
@@ -6900,10 +6900,13 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 									"Chromosome_conflict-Wrong_chr" ,
 									"Located on: " + str(chr) + " - Markers on (" + str(len(found_marker_chrs)) + ") chrs: " + ", ".join( [ str(x) for x in found_marker_chrs ] )
 									]
-							print >> sys.stdout, '#### ' + seqID + ": contains markers of a different chromosome"
+							print >> sys.stderr, '#### ' + seqID + ": contains markers of a different chromosome"
 						else :
 							# right chr is in
-							chr_count = [ [  x , found_marker[x]["count"] ] for x in found_marker.keys() ].sort(key=lambda x: x[1] , reverse=True)
+							chr_count = [ [  x , found_marker[x]["count"] ] for x in found_marker.keys() ]
+							chr_count.sort(key=lambda x: x[1] , reverse=True)
+							print >> sys.stderr, chr_count
+
 							if not found_marker[chr]["count"] > chr_count[1][1] :
 								# chr doesn't have the most markers
 								Chromosome_conflict = True
@@ -6913,7 +6916,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 										"Chromosome_conflict-Not_highest_support",
 										"Location on " + str(chr) + " supported by " + str(found_marker[chr]["count"]) + " markers - Most suppor for " +  chr_count[0][0] + " with " + str(chr_count[0][1]) + " markers"
 										]
-								print >> sys.stdout, '#### ' + seqID + ": contains more markers from a different chromosome"
+								print >> sys.stderr, '#### ' + seqID + ": contains more markers from a different chromosome"
 							else :
 								Chromosome_conflict = False
 								ranges_db[chr][hap][num] = {
@@ -6933,7 +6936,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 									"Chromosome_conflict-Wrong_chr" ,
 									"Located on: " + str(chr) + " - Markers on (1) chr: " + found_marker_chrs[0]
 									]
-							print >> sys.stdout, '#### ' + seqID + ": contains markers of a different chromosome"
+							print >> sys.stderr, '#### ' + seqID + ": contains markers of a different chromosome"
 						else :
 							Chromosome_conflict = False
 							ranges_db[chr][hap][num] = {
@@ -6966,7 +6969,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 										"Order_conflict" ,
 										"Marker range [" + str(actual_range[0]) + "-" + str(actual_range[1]) + "] - Expected to be after " + ranges_db[chr][hap][prev]["id"] + " with marker range [" + str(prev_range[0]) + "-" + str(prev_range[1]) + "]"
 										]
-								print >> sys.stdout, '#### ' + seqID + ": Structure and map discord on the sequence is position in the chromosome"
+								print >> sys.stderr, '#### ' + seqID + ": Structure and map discord on the sequence is position in the chromosome"
 						# Orientation QC
 						marker_list = ranges_db[chr][hap][num]["list"]
 						marker_orientation = marker_progression( marker_list )
@@ -6978,7 +6981,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 									"Markers",
 									"One marker, not oriented"
 								]
-							print >> sys.stdout, '#### ' + seqID + ": has just one marker. Orientation may be unreliable"
+							print >> sys.stderr, '#### ' + seqID + ": has just one marker. Orientation may be unreliable"
 						elif marker_orientation == "-" or marker_orientation == "+" :
 							if not strand == marker_orientation :
 								if not seqID in conflicts_db:
@@ -6987,7 +6990,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 										"Orientation",
 										"Opposite sequence orientation"
 									]
-								print >> sys.stdout, '#### ' + seqID + ": Structure and map discord on the sequence orientation"
+								print >> sys.stderr, '#### ' + seqID + ": Structure and map discord on the sequence orientation"
 						else :
 							# marker_orientation == "undetectable"
 							if not seqID in conflicts_db:
@@ -6996,7 +6999,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 									"Markers" ,
 									"Multiple markers, not oriented"
 									]
-								print >> sys.stdout, '#### ' + seqID + ": Markers do not define a unique orientation"
+								print >> sys.stderr, '#### ' + seqID + ": Markers do not define a unique orientation"
 
 	# 2 - Clean forced_list_1 and forced_list_2 according to the conflict_resolution policy
 	good_list = { "hap1" : [] , "hap2" : [] }
@@ -7021,7 +7024,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 		# conflict_resolution == "exit": The tool quits after saving Chromosome_conflict, no need for doing anything at this point
 		reasons_to_remove = []
 
-	print >> sys.stdout, '## Resolving conflicts between structure and map using rationale: ' + conflict_resolution
+	print >> sys.stderr, '## Resolving conflicts between structure and map using rationale: ' + conflict_resolution
 
 	for hap in sorted(forced_list.keys()) :
 		for chr in sorted(forced_list[hap].keys()) :
