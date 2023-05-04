@@ -7004,6 +7004,8 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 									]
 								print >> sys.stderr, '#### ' + seqID + ": Markers do not define a unique orientation"
 
+				print >> sys.stderr, conflicts_db
+
 	# 2 - Clean forced_list_1 and forced_list_2 according to the conflict_resolution policy
 	good_list = { "hap1" : {} , "hap2" : {} }
 
