@@ -6846,7 +6846,7 @@ def upgrade_qc( structure_db , map_byseq_db , marker_db , conflict_resolution) :
 		##### for each haplotype
 		for hap in [ "hap1" , "hap2" ] :
 			###### Each sequence
-			for num in sorted(structure_db[chr].keys()):
+			for num in sorted(structure_db[chr][hap].keys()):
 				seqID , strand = structure_db[chr][hap][num].split("|")
 
 				# Map support for the sequence
