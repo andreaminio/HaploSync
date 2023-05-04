@@ -6868,8 +6868,8 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 					forced_list[hap][chr].append(structure_db[chr][hap][num])
 					seqID_markers = marker_db[seqID][:]
 					#print >> sys.stderr, seqID_markers
-					#seqID_markers.sort(key=lambda x: x[0])
-					#marker_count = len(seqID_markers)
+					seqID_markers.sort(key=lambda x: x[0])
+					marker_count = len(seqID_markers)
 					# marker_db[seq_id] = [ ... , [ int(start) , int(stop) , marker_id , marker_chr , int(marker_pos) ] , ... ]
 
 					# Chromosome conflicts
