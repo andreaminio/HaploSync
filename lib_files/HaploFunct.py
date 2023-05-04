@@ -6944,6 +6944,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 					if not Chromosome_conflict :
 						if num > 0 :
 							print >> sys.stderr, num
+							print >> sys.stderr, (num - 1)
 							print >> sys.stderr, range(num - 1)
 							for prev in reversed(range( num -1 )) :
 								if prev in ranges_db[chr][hap] :
