@@ -510,8 +510,13 @@ def main() :
 		# TODO: To Test
 		options.force_direction1 = True
 		options.force_direction2 = True
+		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] = Importing structure to upgrade"
+		print >> sys.stdout, '# Importing structure to upgrade'
 		structure_db = read_known_structure( options.upgrade, options.upgrade_format , options.map_ids )
-		json.dump( structure_db , open( options.out + ".structure_to_update.json" , "w" ) , indent=4 , sort_keys=True  )
+		#json.dump( structure_db , open( options.out + ".structure_to_update.json" , "w" ) , indent=4 , sort_keys=True  )
+
+		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] = QC of structure and map consitency"
+		print >> sys.stdout, '# QC of structure and map consitency'
 		forced_list_1 , forced_list_2 , conflicts_db = upgrade_qc( structure_db , marker_map_by_seq , marker_hits_by_seq , conflict_resolution )
 		conflicts_file_name = options.out + ".map2structure_conflicts.txt"
 		conflicts_file_name = print_conflicts( conflicts_db , conflicts_file_name )
