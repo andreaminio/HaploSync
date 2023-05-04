@@ -7038,7 +7038,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 			for element in forced_list[hap][chr] :
 				seqID , strand = element.split("|")
 
-				if not seqID in conflicts_db[seqID] :
+				if not seqID in conflicts_db :
 					# Sequence has no conflicts >> good!
 					if chr not in good_list[hap]:
 						good_list[hap][chr] = []
