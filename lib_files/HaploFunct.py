@@ -6943,14 +6943,17 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 					# Order (best chromosome)
 					if not Chromosome_conflict :
 						if num > 0 :
-							print >> sys.stderr, num
-							print >> sys.stderr, range(num)
+							#print >> sys.stderr, num
+							#print >> sys.stderr, range(num)
 							for prev in reversed(range(num)) :
 								if prev in ranges_db[chr][hap] :
 									if ranges_db[chr][hap][prev]["in_order"] == "Correct" :
 										break
-							actual_range = ranges_db[chr][hap][num]
-							prev_range = ranges_db[chr][hap][prev]
+							actual_range = ranges_db[chr][hap][num]["range"]
+							prev_range = ranges_db[chr][hap][prev]["range"]
+
+							#print >> sys.stderr, prev_range
+							#print >> sys.stderr, actual_range
 
 							if actual_range[0] < prev_range[1] :
 								ranges_db[chr][hap][prev]["in_order"] = "Not_correct"
