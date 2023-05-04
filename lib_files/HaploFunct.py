@@ -6968,7 +6968,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 									if not seqID in conflicts_db:
 										conflicts_db[seqID] = [
 											seqID ,
-											"Order_conflict" ,
+											"Ordering_conflict-Wrong_order" ,
 											"Marker range [" + str(actual_range[0]) + "-" + str(actual_range[1]) + "] - Expected to be after " + ranges_db[chr][hap][prev]["id"] + " with marker range [" + str(prev_range[0]) + "-" + str(prev_range[1]) + "]"
 											]
 									print >> sys.stderr, '#### ' + seqID + ": Structure and map discord on the sequence is position in the chromosome"
@@ -6981,7 +6981,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 							if not seqID in conflicts_db:
 								conflicts_db[seqID] = [
 									seqID,
-									"Markers",
+									"Unreliable_orientation",
 									"One marker, not oriented"
 								]
 							print >> sys.stderr, '#### ' + seqID + ": has just one marker. Orientation may be unreliable"
@@ -6990,7 +6990,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 								if not seqID in conflicts_db:
 									conflicts_db[seqID] = [
 										seqID,
-										"Orientation",
+										"Wrong_orientation",
 										"Opposite sequence orientation"
 									]
 								print >> sys.stderr, '#### ' + seqID + ": Structure and map discord on the sequence orientation"
@@ -6999,7 +6999,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 							if not seqID in conflicts_db:
 								conflicts_db[seqID] = [
 									seqID ,
-									"Markers" ,
+									"Unreliable_orientation" ,
 									"Multiple markers, not oriented"
 									]
 								print >> sys.stderr, '#### ' + seqID + ": Markers do not define a unique orientation"
@@ -7016,7 +7016,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 		reasons_to_remove = [
 			"Unsupported",
 			"Orientation" ,
-			"Order_conflict" ,
+			"Ordering_conflict-Wrong_order" ,
 			"Chromosome_conflict-Not_highest_support",
 			"Chromosome_conflict-Wrong_chr"
 			]
@@ -7024,7 +7024,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 		# Clean the ones without info or pointing to a different chromosome only
 		reasons_to_remove = [
 			"Unsupported" ,
-			"Order_conflict" ,
+			"Ordering_conflict-Wrong_order" ,
 			"Chromosome_conflict-Wrong_chr"
 			]
 	else :
