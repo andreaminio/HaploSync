@@ -7006,6 +7006,8 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 
 				print >> sys.stderr, conflicts_db
 
+	json.dump(conflicts_db, open( "test" + ".json", "w"), indent=4, sort_keys=True)
+
 	# 2 - Clean forced_list_1 and forced_list_2 according to the conflict_resolution policy
 	good_list = { "hap1" : {} , "hap2" : {} }
 
