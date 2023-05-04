@@ -6784,8 +6784,10 @@ def report_marker_usage( markers_bed_file , marker_map_by_seq , marker_map_by_id
 
 
 def read_known_structure( structure_file_name , file_format , map_ids_file ) :
-	structure_db = {}
+	# TODO: add logging info
 
+
+	structure_db = {}
 	map_ids = {}
 
 	for line in open(map_ids_file , "r") :
@@ -6802,9 +6804,12 @@ def read_known_structure( structure_file_name , file_format , map_ids_file ) :
 				hap , chr = map_ids[str_chr]
 				if chr not in structure_db :
 					structure_db[chr] = { "hap1" : {} , "hap2" : {} }
+				block_id = -1
 				for start in sorted(agp_db[str_chr].keys()) :
 					Obj_Name , Obj_start , Obj_End , PartNum , Compnt_Type , CompntId , CompntStart , CompntEnd ,  Orientation = agp_db[str_chr][start]
-					structure_db[chr][hap][PartNum] = CompntId + "|" + Orientation
+					if Compnt_Type == "W" :
+						block_id += 1
+						structure_db[chr][hap][PartNum] = CompntId + "|" + Orientation
 
 	elif file_format.lower() == "block" :
 		block_db = read_block(structure_file_name)
@@ -6816,10 +6821,12 @@ def read_known_structure( structure_file_name , file_format , map_ids_file ) :
 				for block_id in sorted(block_db[str_chr].keys()) :
 					seqID, start , stop, strand = block_db[chr][block_id]
 					structure_db[chr][hap][block_id] = seqID + "|" + strand
+
 	return structure_db
 
 
 def upgrade_qc( structure_db , map_byseq_db , marker_db , conflict_resolution) :
+	# TODO: Debug
 	# structure_db[chr][num] = [seqID + "|" + strand]
 	# map_db[marker_chr] = [ ... , [ int(pos) , marker_id ] , ... ]
 	# marker_db[seq_id] = [ ... , [ int(start) , int(stop) , marker_id , marker_chr , int(marker_pos) ] , ... ]

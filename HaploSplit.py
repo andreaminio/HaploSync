@@ -516,7 +516,13 @@ def main() :
 		conflicts_file_name = options.out + ".map2structure_conflicts.txt"
 		conflicts_file_name = print_conflicts( conflicts_db , conflicts_file_name )
 		# Check if continue or quit
-		if options.upgrade_QC or ( conflicts_db != {} and conflict_resolution == "exit" ):
+		if options.upgrade_QC :
+			print >> sys.stdout, '[EXIT] QC of the comparison between structure and map completed'
+			print >> sys.stderr, '[EXIT] QC of the comparison between structure and map completed'
+			exit(0)
+		elif ( conflicts_db != {} and conflict_resolution == "exit" ) :
+			print >> sys.stdout, '[EXIT] Structure vs map QC completed. Conflicts found'
+			print >> sys.stderr, '[EXIT] Structure vs map QC completed. Conflicts found'
 			exit(1)
 
 	elif options.Require1 or options.Require2 :
