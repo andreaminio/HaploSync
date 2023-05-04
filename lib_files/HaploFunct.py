@@ -7008,7 +7008,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 								print >> sys.stderr, '#### ' + seqID + ": Markers do not define a unique orientation"
 
 	# 2 - Clean forced_list_1 and forced_list_2 according to the conflict_resolution policy
-	good_list = { "hap1" : [] , "hap2" : [] }
+	good_list = { "hap1" : {} , "hap2" : {} }
 
 	if conflict_resolution == "release":
 		# Release the conflicting sequences from the location in the pre-computed structure
