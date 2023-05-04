@@ -517,7 +517,7 @@ def main() :
 
 		print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] = QC of structure and map consitency"
 		print >> sys.stdout, '# QC of structure and map consitency'
-		forced_list_1 , forced_list_2 , conflicts_db = upgrade_qc( structure_db , marker_map_by_seq , marker_hits_by_seq , conflict_resolution )
+		forced_list_1 , forced_list_2 , conflicts_db = upgrade_qc( structure_db , marker_hits_by_seq , conflict_resolution )
 		conflicts_file_name = options.out + ".map2structure_conflicts.txt"
 		conflicts_file_name = print_conflicts( conflicts_db , conflicts_file_name )
 		# Check if continue or quit

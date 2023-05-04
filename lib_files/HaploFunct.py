@@ -6827,7 +6827,7 @@ def read_known_structure( structure_file_name , file_format , map_ids_file ) :
 	return structure_db
 
 
-def upgrade_qc( structure_db , map_byseq_db , marker_db , conflict_resolution) :
+def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 	# TODO: Debug
 	# structure_db[chr][num] = [seqID + "|" + strand]
 	# map_db[marker_chr] = [ ... , [ int(pos) , marker_id ] , ... ]
@@ -6866,8 +6866,9 @@ def upgrade_qc( structure_db , map_byseq_db , marker_db , conflict_resolution) :
 					print >> sys.stdout, '#### ' + seqID + ": not supported by any marker"
 				else :
 					forced_list[hap][chr].append(structure_db[chr][hap][num])
-					seqID_markers = list(marker_db[seqID][:].sort(key=lambda x: x[0]))
+					seqID_markers = marker_db[seqID]
 					print >> sys.stderr, seqID_markers
+					seqID_markers.sort(key=lambda x: x[0])
 					marker_count = len(seqID_markers)
 					# marker_db[seq_id] = [ ... , [ int(start) , int(stop) , marker_id , marker_chr , int(marker_pos) ] , ... ]
 
