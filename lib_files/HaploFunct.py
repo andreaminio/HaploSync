@@ -7051,11 +7051,11 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 
 
 def print_conflicts(conflicts_db, file_name) :
+	json.dump(conflicts_db, open( file_name + ".json", "w"), indent=4, sort_keys=True)
 	conflicts_file = open(file_name , "w+")
 	for seqID in sorted(conflicts_db.keys()) :
 		print >> conflicts_file , "\t".join( [ str(x) for x in conflicts_db[seqID] ] )
 	conflicts_file.close()
-
 	return file_name
 
 
