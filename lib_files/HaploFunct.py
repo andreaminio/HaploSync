@@ -7004,7 +7004,7 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 									]
 								print >> sys.stderr, '#### ' + seqID + ": Markers do not define a unique orientation"
 
-				print >> sys.stderr, conflicts_db
+				#print >> sys.stderr, conflicts_db
 
 	json.dump(conflicts_db, open( "test" + ".json", "w"), indent=4, sort_keys=True)
 
