@@ -6789,7 +6789,7 @@ def read_known_structure( structure_file_name , file_format , map_ids_file ) :
 	map_ids = {}
 
 	for line in open(map_ids_file , "r") :
-		id , chr , hap = line.rstrip().split("\t")
+		id , hap , chr = line.rstrip().split("\t")
 		if (not id in map_ids) :
 			map_ids[id] = [ hap , chr ]
 		else :
@@ -6801,7 +6801,7 @@ def read_known_structure( structure_file_name , file_format , map_ids_file ) :
 			hap , chr = map_ids[str_chr]
 			if chr not in structure_db :
 				structure_db[chr] = { "hap1" : {} , "hap2" : {} }
-			for start in sorted(agp_db[chr].keys()) :
+			for start in sorted(agp_db[str_chr].keys()) :
 				Obj_Name , Obj_start , Obj_End , PartNum , Compnt_Type , CompntId , CompntStart , CompntEnd ,  Orientation = agp_db[str_chr][start]
 				structure_db[chr][hap][PartNum] = CompntId + "|" + Orientation
 
