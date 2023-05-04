@@ -6894,11 +6894,12 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 						if chr not in found_marker_chrs :
 							# Different chromosomes only
 							Chromosome_conflict = True
-							conflicts_db[seqID] = [
-								seqID ,
-								"Chromosome_conflict-Wrong_chr" ,
-								"Located on: " + str(chr) + " - Markers on (" + str(len(found_marker_chrs)) + ") chrs: " + ", ".join( [ str(x) for x in found_marker_chrs ] )
-								]
+							if not seqID in conflicts_db :
+								conflicts_db[seqID] = [
+									seqID ,
+									"Chromosome_conflict-Wrong_chr" ,
+									"Located on: " + str(chr) + " - Markers on (" + str(len(found_marker_chrs)) + ") chrs: " + ", ".join( [ str(x) for x in found_marker_chrs ] )
+									]
 							print >> sys.stdout, '#### ' + seqID + ": contains markers of a different chromosome"
 						else :
 							# right chr is in
@@ -6906,11 +6907,12 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 							if not found_marker[chr]["count"] > chr_count[1][1] :
 								# chr doesn't have the most markers
 								Chromosome_conflict = True
-								conflicts_db[seqID] = [
-									seqID,
-									"Chromosome_conflict-Not_highest_support",
-									"Location on " + str(chr) + " supported by " + str(found_marker[chr]["count"]) + " markers - Most suppor for " +  chr_count[0][0] + " with " + str(chr_count[0][1]) + " markers"
-									]
+								if not seqID in conflicts_db:
+									conflicts_db[seqID] = [
+										seqID,
+										"Chromosome_conflict-Not_highest_support",
+										"Location on " + str(chr) + " supported by " + str(found_marker[chr]["count"]) + " markers - Most suppor for " +  chr_count[0][0] + " with " + str(chr_count[0][1]) + " markers"
+										]
 								print >> sys.stdout, '#### ' + seqID + ": contains more markers from a different chromosome"
 							else :
 								Chromosome_conflict = False
@@ -6925,11 +6927,12 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 						if chr not in found_marker_chrs :
 							# Different chromosome
 							Chromosome_conflict = True
-							conflicts_db[seqID] = [
-								seqID ,
-								"Chromosome_conflict-Wrong_chr" ,
-								"Located on: " + str(chr) + " - Markers on (1) chr: " + found_marker_chrs[0]
-								]
+							if not seqID in conflicts_db:
+								conflicts_db[seqID] = [
+									seqID ,
+									"Chromosome_conflict-Wrong_chr" ,
+									"Located on: " + str(chr) + " - Markers on (1) chr: " + found_marker_chrs[0]
+									]
 							print >> sys.stdout, '#### ' + seqID + ": contains markers of a different chromosome"
 						else :
 							Chromosome_conflict = False
@@ -6957,39 +6960,43 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 
 							if actual_range[0] < prev_range[1] :
 								ranges_db[chr][hap][prev]["in_order"] = "Not_correct"
-								conflicts_db[seqID] = [
-									seqID ,
-									"Order_conflict" ,
-									"Marker range [" + str(actual_range[0]) + "-" + str(actual_range[1]) + "] - Expected to be after " + ranges_db[chr][hap][prev]["id"] + " with marker range [" + str(prev_range[0]) + "-" + str(prev_range[1]) + "]"
-									]
+								if not seqID in conflicts_db:
+									conflicts_db[seqID] = [
+										seqID ,
+										"Order_conflict" ,
+										"Marker range [" + str(actual_range[0]) + "-" + str(actual_range[1]) + "] - Expected to be after " + ranges_db[chr][hap][prev]["id"] + " with marker range [" + str(prev_range[0]) + "-" + str(prev_range[1]) + "]"
+										]
 								print >> sys.stdout, '#### ' + seqID + ": Structure and map discord on the sequence is position in the chromosome"
 						# Orientation QC
 						marker_list = ranges_db[chr][hap][num]["list"]
 						marker_orientation = marker_progression( marker_list )
 
 						if marker_orientation == "single" :
-							conflicts_db[seqID] = [
-								seqID,
-								"Markers",
-								"One marker, not oriented"
-							]
+							if not seqID in conflicts_db:
+								conflicts_db[seqID] = [
+									seqID,
+									"Markers",
+									"One marker, not oriented"
+								]
 							print >> sys.stdout, '#### ' + seqID + ": has just one marker. Orientation may be unreliable"
 						elif marker_orientation == "-" or marker_orientation == "+" :
 							if not strand == marker_orientation :
-								conflicts_db[seqID] = [
-									seqID,
-									"Orientation",
-									"Opposite sequence orientation"
-								]
+								if not seqID in conflicts_db:
+									conflicts_db[seqID] = [
+										seqID,
+										"Orientation",
+										"Opposite sequence orientation"
+									]
 								print >> sys.stdout, '#### ' + seqID + ": Structure and map discord on the sequence orientation"
 						else :
 							# marker_orientation == "undetectable"
-							conflicts_db[seqID] = [
-								seqID ,
-								"Markers" ,
-								"Multiple markers, not oriented"
-								]
-							print >> sys.stdout, '#### ' + seqID + ": Markers do not define a unique orientation"
+							if not seqID in conflicts_db:
+								conflicts_db[seqID] = [
+									seqID ,
+									"Markers" ,
+									"Multiple markers, not oriented"
+									]
+								print >> sys.stdout, '#### ' + seqID + ": Markers do not define a unique orientation"
 
 	# 2 - Clean forced_list_1 and forced_list_2 according to the conflict_resolution policy
 	good_list = { "hap1" : [] , "hap2" : [] }
