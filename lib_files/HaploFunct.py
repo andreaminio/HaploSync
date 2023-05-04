@@ -7034,21 +7034,21 @@ def upgrade_qc( structure_db , marker_db , conflict_resolution) :
 
 	for hap in sorted(forced_list.keys()) :
 		for chr in sorted(forced_list[hap].keys()) :
-			element = forced_list[hap][chr]
-			seqID , strand = element.split("|")
+			for element in forced_list[hap][chr] :
+				seqID , strand = element.split("|")
 
-			if not seqID in conflicts_db[seqID] :
-				# Sequence has no conflicts >> good!
-				if chr not in good_list[hap]:
-					good_list[hap][chr] = []
-				good_list[hap][chr].append(element)
-			else :
-				reason = conflicts_db[seqID][1]
-				if reason not in reasons_to_remove:
-					# Sequence has conflicts but still good to use
+				if not seqID in conflicts_db[seqID] :
+					# Sequence has no conflicts >> good!
 					if chr not in good_list[hap]:
 						good_list[hap][chr] = []
 					good_list[hap][chr].append(element)
+				else :
+					reason = conflicts_db[seqID][1]
+					if reason not in reasons_to_remove:
+						# Sequence has conflicts but still good to use
+						if chr not in good_list[hap]:
+							good_list[hap][chr] = []
+						good_list[hap][chr].append(element)
 
 	return good_list["hap1"], good_list["hap2"], conflicts_db
 
