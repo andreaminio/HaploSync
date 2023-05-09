@@ -182,7 +182,7 @@ def main() :
 		sys.exit(1)
 
 	if options.haplodup :
-		if not options.input_groups :
+		if (not options.input_groups) and (not options.legacy_groups ):
 			print >> sys.stderr , "[ERROR] --haplodup set but --input_groups was not provided"
 			parser.print_help()
 			sys.exit(1)

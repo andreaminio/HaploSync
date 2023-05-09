@@ -6786,7 +6786,7 @@ def report_marker_usage( markers_bed_file , marker_map_by_seq , marker_map_by_id
 def read_known_structure( structure_file_name , file_format , map_ids_file ) :
 	# TODO: add logging info
 
-	print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == Reading " + structure_file_name + "file"
+	print >> sys.stdout, '[' + str(datetime.datetime.now()) + "] == Reading " + structure_file_name + " file"
 	print >> sys.stderr, '## Reading ' + structure_file_name + "file"
 
 	structure_db = {}
