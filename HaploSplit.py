@@ -520,6 +520,9 @@ def main() :
 		forced_list_1 , forced_list_2 , conflicts_db = upgrade_qc( structure_db , marker_hits_by_seq , conflict_resolution )
 		conflicts_file_name = options.out + ".map2structure_conflicts.txt"
 		conflicts_file_name = print_conflicts( conflicts_db , conflicts_file_name )
+		json.dump(forced_list_1, open(options.out + ".forced_list_1.json", "w"), indent=4, sort_keys=True)
+		json.dump(forced_list_2, open(options.out + ".forced_list_2.json", "w"), indent=4, sort_keys=True)
+
 		# Check if continue or quit
 		if options.upgrade_QC :
 			print >> sys.stdout, '[EXIT] QC of the comparison between structure and map completed'
