@@ -3119,6 +3119,10 @@ def main() :
 			# Merge all positions on input sequences and output sequences
 			# Expected dict format: markers_db[seq_id][marker_id] = [ ... , [seq_id , start , stop , marker_id] , ... ]
 			all_markers_db = dict(markers_db)
+
+			json.dump(markers_db, open("markers_db.json", "w"), indent=4, sort_keys=True)
+			json.dump(all_markers_db, open("all_markers_db.before.json", "w"), indent=4, sort_keys=True)
+
 			# add marker_hits_by_seq info
 			# marker_hits_by_seq[seq_id] = [ ... , [ int(start) , int(stop) , marker_id , marker_chr , int(marker_pos) ] , ... ]
 			for seq_id in marker_hits_by_seq.keys() :
@@ -3130,6 +3134,8 @@ def main() :
 					if marker_id not in all_markers_db[seq_id] :
 						all_markers_db[seq_id][marker_id] = []
 					all_markers_db[seq_id][marker_id].append([ seq_id , start , stop , marker_id ])
+
+			json.dump(all_markers_db, open("all_markers_db.after.json", "w"), indent=4, sort_keys=True)
 
 
 			# TODO: Perform Hap1 vs Hap2 pairwise comparison of known features (without unplaced)
