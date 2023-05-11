@@ -3165,7 +3165,7 @@ def main() :
 					clean_marker_set_by_seq = {}
 				structure_plot_db = {"Rejected" : {}}
 
-				json.dump(clean_marker_set_by_seq, open("clean_marker_set_by_seq.json", "w"), indent=4, sort_keys=True)
+				#json.dump(clean_marker_set_by_seq, open("clean_marker_set_by_seq.json", "w"), indent=4, sort_keys=True)
 
 				for hap1_id in sorted(fasta_db_1.keys()) :
 					chr_id = fasta_chr_1[hap1_id]

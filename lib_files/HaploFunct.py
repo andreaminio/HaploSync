@@ -5959,6 +5959,8 @@ def rejected_QC(out_dir, query_name , query_fasta_db, chr_id, fasta_db_1, fasta_
 								usage = "TRUE"
 							marker_all_sequence_table.append([chr_id , start , marker_id , marker_pos, usage])
 							# Find matches with unplaced
+
+
 							if (query_id in marker_bed )  and (marker_id in marker_bed[query_id]) :
 								for hit2 in marker_bed[query_id][marker_id] :
 									un_chr_id , un_start , un_stop , un_marker_id = hit2
