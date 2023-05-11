@@ -3120,8 +3120,8 @@ def main() :
 			# Expected dict format: markers_db[seq_id][marker_id] = [ ... , [seq_id , start , stop , marker_id] , ... ]
 			all_markers_db = dict(markers_db)
 
-			json.dump(markers_db, open("markers_db.json", "w"), indent=4, sort_keys=True)
-			json.dump(all_markers_db, open("all_markers_db.before.json", "w"), indent=4, sort_keys=True)
+			#json.dump(markers_db, open("markers_db.json", "w"), indent=4, sort_keys=True)
+			#json.dump(all_markers_db, open("all_markers_db.before.json", "w"), indent=4, sort_keys=True)
 
 			# add marker_hits_by_seq info
 			# marker_hits_by_seq[seq_id] = [ ... , [ int(start) , int(stop) , marker_id , marker_chr , int(marker_pos) ] , ... ]
@@ -3135,7 +3135,7 @@ def main() :
 						all_markers_db[seq_id][marker_id] = []
 					all_markers_db[seq_id][marker_id].append([ seq_id , start , stop , marker_id ])
 
-			json.dump(all_markers_db, open("all_markers_db.after.json", "w"), indent=4, sort_keys=True)
+			#json.dump(all_markers_db, open("all_markers_db.after.json", "w"), indent=4, sort_keys=True)
 
 
 			# TODO: Perform Hap1 vs Hap2 pairwise comparison of known features (without unplaced)
@@ -3164,6 +3164,9 @@ def main() :
 				if not options.markers_hits :
 					clean_marker_set_by_seq = {}
 				structure_plot_db = {"Rejected" : {}}
+
+				json.dump(clean_marker_set_by_seq, open("clean_marker_set_by_seq.json", "w"), indent=4, sort_keys=True)
+
 				for hap1_id in sorted(fasta_db_1.keys()) :
 					chr_id = fasta_chr_1[hap1_id]
 					print >> sys.stdout , '[' + str(datetime.datetime.now()) + "] == Chr: " + chr_id
