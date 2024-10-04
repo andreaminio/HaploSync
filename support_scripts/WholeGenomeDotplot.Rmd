@@ -68,7 +68,7 @@ tLen_tb <- coords.1 %>% select(tID, tLen) %>% distinct() %>% arrange(tID) %>% mu
 
 qLen_tb <- coords.1 %>% select(qID, qLen) %>% distinct() %>% arrange(qID) %>% mutate( cum_len = cumsum(qLen)[row_number()] , offset = ifelse ( row_number()==1 , 0, lag(cum_len) ) , ID = "Query")
 
-coords.2 <- left_join ( left_join ( coords.1 , tLen_tb , by = c( "tID" =  "tID" )  , all.x = TRUE) , qLen_tb , by = c( "qID" =  "qID" )  , all.x = TRUE)
+coords.2 <- left_join ( left_join ( coords.1 , tLen_tb , by = c( "tID" =  "tID" )) , qLen_tb , by = c( "qID" =  "qID" ))
 
 colnames(coords.2) <- c( "T_name", "T_len" , "T_start", "T_stop", "Q_name", "Q_len", "Q_start", "Q_stop", "iden",    "T_hit_len", "T_len.2", "T_cum_len", "T_offset", "T_ID", "Q_length.2", "Q_cum_len", "Q_offset", "Q_ID")
 
