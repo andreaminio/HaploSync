@@ -1,25 +1,10 @@
 # HaploSync installation
 
-We suggest installing the tool through a dedicated virtual environment (even when possessing sudo credentials) to avoid conflicts with their existing global environment. 
+We suggest installing the tool within a dedicated virtual environment (even when possessing sudo credentials) to avoid conflicts with the existing global environment. 
 
-## Conda virtual environment installation
-
-1. Visit the [Miniconda website](https://docs.conda.io/en/latest/miniconda.html) and download the tool appropriate for your system. Miniconda2 is recommended because python 2.7 is necessary.
-
-2. Create a new environment
-
-   ```bash
-   bash  Miniconda2-latest-Linux-x86_64.sh
-   ```
-
-   * The installation path is `/path/to/virtualenv/miniconda2_HaploSync`.
-   * At the end of the installation, Miniconda will ask if the environment should be used as default. This can be done at the discretion of the user.
-
-3. Load the environment
-
-   ```bash
-   source /path/to/virtualenv/miniconda2_HaploSync/bin/activate
-   ```
+```bash
+conda create --name haplosync python=2.7
+```
 
 ## Download HaploSync
 
@@ -29,97 +14,71 @@ Install HaploSync by running the following in your preferred working directory:
 
 * Move to the desired directory:
 
-  ```bash
+ ```bash
   cd /path/to/installation/directory
   ```
 
 * Download the executables:
 
-  ```bash
+ ```bash
   git clone https://github.com/andreaminio/HaploSync
   ```
-
-This will create a copy of the tool commands.
 
 ### From release tarball
 
 Download and unpack the desired release version from [the releases reporsitory](https://github.com/andreaminio/HaploSync/releases).
 
-
-## Install prerequisites 
-To install the prerequisites for HaploSync in a new conda environment, we suggest using the dedicated installing script. Alternatively, we provide details for a custom manual installation of all the prerequisites both within and outside a conda environment.   
-
-### Through the installer
-The `install.sh` script will perform an automatic installation of and provide all the necessary libraries and tools.
-  * Type:
-    ```bash
-    source /path/to/virtualenv/miniconda2_HaploSync/bin/activate
-    bash install.sh
-    ```
-
-### Alternative - Install prerequisites manually in conda
-To manually setup the conda environment, be sure to install all the following prerequisites
+## Install dependencies
+### Using conda
 
 1. Activate the virtual environment:
-    ```bash
-    source /path/to/virtualenv/miniconda2_HaploSync/bin/activate
-    ```
-2. Install python libraries: 
-   ```bash
-   pip install Cython
-   pip install networkx==2.1
-   pip install biopython==1.76
-   pip install pandas
-   pip install numpy scipy toml datetime multiprocessing pyyaml matplotlib
-   ```
+```bash
+conda activate haplosync
+```
+
+2. Install R and R packages
+```bash
+# install r
+conda install -c conda-forge r-base
+
+# install r packages
+conda install -c conda-forge r-curl r-tidyverse r-optparse r-plotly r-plyr r-flexdashboard r-gridextra r-devtools r-knitr r-svglite r-gridsvg r-svgpanzoom r-ggrepel
+```
+
+3. Install python libraries: 
+```bash
+# get pip
+wget https://bootstrap.pypa.io/pip/2.7/get-pip.py
+python get-pip.py
+
+# install
+pip install Cython networkx==2.1 pandas scipy numpy toml datetime multiprocessing pyyaml matplotlib biopython==1.76
+```
 
 3. Install a local version of the 3rd party tools
-   ```bash
-   conda install libgit2
-   conda install -c conda-forge parallel
-   conda install -c bioconda minimap2 samtools bedtools blat
-   conda install -c bioconda gmap=2019.09.12
-   ```
+```bash
+conda install libgit2
+conda install -c conda-forge parallel
+conda install -c bioconda minimap2 samtools bedtools blat gmap=2019.09.12
+```
 
 4. Install Mummer v4
-   * Download [Mummer version 4.0.0.beta5](https://github.com/mummer4/mummer/releases/tag/v4.0.0.beta5) or later from GitHub and install the tool in the Conda environment
-     ```bash
-     tar -xzf ../mummer-4.0.0beta5.tar.gz
-     cd mummer-4.0.0beta5/
-     ./configure --prefix=$CONDA_PREFIX
-     make install
-     ```
-   
-5. Install R and necessary libraries
-     * Install R
-       ```bash
-       conda install -c conda-forge r-base=4.0.2
-       conda install -c conda-forge r-curl=4.3
-       ```
-     * load an R interactive shell checking to be using the conda installation:
-       ```bash
-       R
-       ```
+Download [Mummer version 4.0.0.beta5](https://github.com/mummer4/mummer/releases/tag/v4.0.0.beta5) or later from GitHub and install the tool in the Conda environment
+```bash
+wget https://github.com/mummer4/mummer/releases/download/v4.0.0.beta5/mummer-4.0.0beta5.tar.gz
+tar -xzf mummer-4.0.0beta5.tar.gz
+cd mummer-4.0.0beta5/
+./configure --prefix=$CONDA_PREFIX
+make install
+```
 
-     * Install necessary R packages:
-       ```R
-       install.packages("tidyverse")
-       install.packages("optparse")
-       install.packages("plotly")
-       install.packages("plyr")
-       install.packages("flexdashboard")
-       install.packages("gridExtra")
-       install.packages("devtools")
-       require(devtools)
-       install_version("knitr", version = "1.29", repos = "http://cran.us.r-project.org")
-       install_version("ggplot2", version = "3.3.2", repos = "http://cran.us.r-project.org")
-       install.packages("svglite")
-       install.packages("gridSVG")
-       install.packages("svgPanZoom")
-       install.packages("ggrepel")
-       ```
+5. Copy the conf.toml, fields can be left empty since tools are already in the path
+```bash
+cd /path/to/installation/directory/HaploSync
+cp HaploSync.conf.toml_empty HaploSync.conf.toml
+```
 
-### Alternative - Manual installation of depences
+### Manually
 To use HaploSync, be sure to have installed the follwing tools, libraries and packages 
 
 #### Python libraries
@@ -161,7 +120,7 @@ The tools below run the pipeline. It is not necessary for these to be in your `$
   * [Blat](http://www.kentinformatics.com/)
 
 #### R Packages ####
-* In R, install the package useing the following command lines:
+* In R, install the package using the following command lines:
     ```
     install.packages("tidyverse")
     install.packages("optparse")
@@ -185,12 +144,12 @@ If you want to use compatible tool installations that are not accessible directl
 
 If you set up a virtual environment using conda and installed a local version of the tools, you don’t need to customise:
 
-* Generate the file `HaploSync.conf.toml` and then edit the content with desired custom paths:
+Generate the file `HaploSync.conf.toml` and then edit the content with desired custom paths:
 
   ```bash
-  cd /path/to/installation/directory/HaploSync
-  cp HaploSync.conf.toml_empty HaploSync.conf.toml
-  vim HaploSync.conf.toml
+cd /path/to/installation/directory/HaploSync
+cp HaploSync.conf.toml_empty HaploSync.conf.toml
+vim HaploSync.conf.toml
   ```
 
   The original file looks like:
@@ -208,7 +167,7 @@ If you set up a virtual environment using conda and installed a local version of
   blat = ""
   ```
 
-* To set custom paths to the tools, **add the absolute path to the folder containing each tool between the quotation marks above**. Leave the space between the quotation marks empty if the tools are in your `$PATH`.
+To set custom paths to the tools, **add the absolute path to the folder containing each tool between the quotation marks above**. Leave the space between the quotation marks empty if the tools are in your `$PATH`.
 
 ## References
 
