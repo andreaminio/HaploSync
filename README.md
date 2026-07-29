@@ -1,5 +1,5 @@
 > [!WARNING] 
-> **This repository is no longer maintained.** Development has moved to noecochetel/HaploSync — please use that repository instead.
+> **This repository is no longer maintained.** Development has moved to [noecochetel/HaploSync](https://github.com/noecochetel/HaploSync) — please use that repository instead.
 
 # HaploSync - Ver. 1.0
 Tools for haplotype-wise reconstruction of pseudomolecules
